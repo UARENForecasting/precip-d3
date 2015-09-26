@@ -1,0 +1,8 @@
+*.pyc
+*~
+
+csv/**/*.csv
+figures/**/*.png
+makedir/
+
+feedback.txt
