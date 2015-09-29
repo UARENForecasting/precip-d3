@@ -2,13 +2,13 @@ html, body {
     font-family: 'Source Sans Pro', Helvetica, sans-serif;
     padding:0;
     margin:0;
-    color:#fff;
 }
 
 body {
     width:100%;
     height:100%;
     font-size: 90%;
+    background-color: #D4D4D4;
 }
 
 #map-canvas { height: 500px; }
@@ -20,47 +20,10 @@ body {
 
 .header a:hover {color: red; cursor: pointer;}
 
-.fileselection .generators {padding-left:2em}
-.fileselection a:link {color: black; text-decoration:none;}
-.fileselection a:visited {color: black; text-decoration:none;}
-.fileselection a:hover {color: red; cursor: pointer;}
-.fileselection h4 {text-indent:1em}
-
-.fileselection .utility {
-    text-indent:0em; 
-    font-size:150%; 
-    font-weight: bold; 
-    line-height: 200%;
+#intro {
+    display: inline-block;
+    padding: 10px;
 }
-
-.fileselection .type {
-    text-indent:1em; 
-    font-size:90%; 
-    font-weight: normal; 
-    line-height: 130%;
-}
-
-.fileselection .generator:hover {color: red; cursor: pointer;}
-.fileselection .generator {
-    text-indent:2em; 
-    font-size:80%;
-    line-height: 150%;
-}
-
-.generator {
-    font-size:90%;
-}
-
-.datalisting {
-    font-size: 100%;
-    line-height: 130%;
-}
-
-.data .introtext {
-    font-size: 125%;
-}
-
-.short-definition {display:none};
 
 .chart {
     float:left;
@@ -70,7 +33,7 @@ body {
 .axis line,
 .axis path {
     fill: none;
-    stroke: #000;
+    stroke: black;
     shape-rendering: crispEdges;
     stroke-width: 2;
 }
@@ -81,9 +44,17 @@ body {
 
 .line {
     fill: none;
-    stroke: steelblue;
-    stroke-width: 2px;
+/*     set in chart.js */
+/*     stroke-width: 2px; */
+/*     stroke-opacity: 1; */
 }
+
+/* 
+.line .hovered {
+    stroke-width: 3px;
+    stroke-opacity: 1;
+}
+ */
 
 .title {
     font-size: 130%;
@@ -159,126 +130,6 @@ text.enlarge-shrink-button:hover { cursor: pointer; fill: #0972a5 !important}
     z-index: 99;
 }
 
-/* craigs colors */
-/* 
-.Load { stroke : #da1f26; }
-
-.Load-Aggregate { stroke : #da1f26; }
-.Net-all { stroke: #da1f26; }
-.Net-VERs { stroke: #399348; }
-
-.Total { stroke: black; }
-.Renew { stroke: #399348; }
-.Gas { stroke: #e66124; }
-.Coal { stroke: #bbbdc0; }
-.Nuclear { stroke: #991620; }
-
-.Solar { stroke : #f5c040;} 
-.Wind { stroke: #b178a5; }
-
-.Hydro { stroke: #7bafde; }
-.Biomassgas { stroke: #ff7f0e; }
-.Geothermal { stroke: rgb(141,15,15); }
-
-.Other-Renew { stroke: #cadfab; }
-.Other-Fossil { stroke: #892e72; }
-.Conven Gen { stroke: indigo; }
-
-.Aggregate { stroke: black; }
-.APS { stroke: #da1f26; }
-.TEP { stroke: #399348; }
-.SRP { stroke: #1c66b0; }
-.WALC { stroke: #892e72; }
-.EPE { stroke: #f0932b; }
-.PNM { stroke: #bbbdc0; }
-.IID { stroke: #991620; }
-
-.Dispatchable-Renewables { stroke: #cadfab; }
-.VERs { stroke: #ff7f0e; }
-
-.Solar-PV { stroke: #f5c040; }
-.Solar-CSP { stroke: #ff7f0e; }
- */
-
-
-/* color brewer 12 qual */
-
-/* 
-.Load { stroke : #a6cee3; }
-
-.Load-Aggregate { stroke : #a6cee3; }
-.Net-all { stroke: #e31a1c; }
-.Net-VERs { stroke: #33a02c; }
-
-.Total { stroke: black; }
-.Renew { stroke: #33a02c; }
-.Gas { stroke: #fdbf6f; }
-.Coal { stroke: #bbbdc0; }
-.Nuclear { stroke: #6a3d9a; }
-
-.Solar { stroke : #da1f26;} 
-.Wind { stroke: #b2df8a; }
-.Hydro { stroke: #1f78b4; }
-.Biomassgas { stroke: #cab2d6; }
-.Geothermal { stroke: #b15928; }
-
-.Other-Fossil { stroke: #892e72; }
-.Other-Renew { stroke: #b2df8a; }
-.Conven-Gen { stroke: #fb9a99; }
-
-.Aggregate { stroke: black; }
-.APS { stroke: #da1f26; }
-.TEP { stroke: #399348; }
-.SRP { stroke: #1c66b0; }
-.WALC { stroke: #892e72; }
-.EPE { stroke: #f0932b; }
-.PNM { stroke: #bbbdc0; }
-.IID { stroke: #991620; }
-
-.Dispatchable-Renewables { stroke: #cadfab; }
-.VERs { stroke: #ff7f0e; }
-
-.Solar-PV { stroke: #f5c040; }
-.Solar-CSP { stroke: #ff7f0e; }
- */
- 
-/* custom colors */
-.Load, .Load-Aggregate { stroke : #b41f2d; }
-.Net-VERs { stroke: #1f721f; }
-.Net-all { stroke: #165682; }
-
-.Total { stroke: black; }
-.Renew { stroke: #1f721f; }
-.Gas { stroke: #165682; }
-.Coal { stroke: #727272; }
-.Nuclear { stroke: #b41f2d; }
-
-.Solar { stroke : #2fa45f;} 
-.Wind { stroke: #a42f74; }
-.Hydro { stroke: #2f74a4; }
-.Biomassgas { stroke: #b45c1f; }
-.Geothermal { stroke: #b4a71f; }
-
-.Other-Fossil { stroke: #892e72; }
-.Other-Renew { stroke: #b2df8a; }
-.Conven-Gen { stroke: #fb9a99; }
-
-.Aggregate { stroke: black; }
-.APS { stroke: #b41f2d; }
-.TEP { stroke: #1f721f; }
-.SRP { stroke: #165682; }
-.WALC { stroke: #a42f74; }
-.EPE { stroke: #b4a71f; }
-.PNM { stroke: #727272; }
-.IID { stroke: #b45c1f; }
-
-.Dispatchable-Renewables { stroke: #cadfab; }
-.VERs { stroke: #ff7f0e; }
-
-.Solar-PV { stroke: #f5c040; }
-.Solar-CSP { stroke: #ff7f0e; }
-
-/* #triangle {display:block;} */
 
 /*.white div { color: black; background-color: white !important; } // we'll be a bit more specific than this.. below */
 .white .axis path { stroke: black !important; }
@@ -346,21 +197,3 @@ body.graphpaper #contact-form .form-row input, body.graphpaper #contact-form .fo
 /* body.graphpaper .tooltipable { color: #089be2 } */
 /* body.graphpaper #header { background:none;background-color:rgba(51,51,51,0.1); color:#000; } */
 
-ul.subnav li.selected { background-color: rgba(51,51,51,0.1);}
-ul.subnav li.selected a { color:#666; }
-
-#utility-logos { background-color: #fff; background: #fff; }
-
-#utility-logos img {
-    max-height: 100px;
-    max-width: 175px;
-    padding: 10px;
-}
-
-#image-slider-container {
-    margin: 10px;
-}
-
-.slider {}
-
-.mapcontrol { margin: 5px; margin-left: 10px;}

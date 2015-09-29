@@ -29,7 +29,7 @@
     <!--[if gte IE 9]><!-->
         <script src="js/d3.min.js"></script>
 <!--         <script src="js/d3.horizlegend.js"></script> -->
-<!--         <script src="js/uad3graphs.js"></script> -->
+        <script src="js/graph.js"></script>
     <!--<![endif]-->
     
     <script type="text/javascript">
@@ -37,6 +37,7 @@
         console.log('is_ie8_or_older = ', is_ie8_or_older);
     </script>
     
+    <script src="colorbrewer/colorbrewer.js"></script>
 <!--     <script src="js/jquery.buttonsetv.js"></script> -->
 <!--     <script src="js/jquery.combobox.js"></script> -->
 <!--     <script src="js/jquery.ui.combobox.js"></script> -->
@@ -55,9 +56,35 @@
     </div>
 
 <div id="content">
-
-A graph
-
+    <div id="data"></div>
+    
+        <div id="intro">
+        <p>
+            This plot shows the cumulative precipitation at TIA for each year.
+            Years are colored by the JAN-FEB <a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI ENSO value</a>.
+            Hover your cursor over a line to get a tooltip with exact values.
+            Water year starts on October 1 of the previous year.
+            The plot currently shows Oct-Apr, but it's easy to change it to
+            include the monsoon.
+        </p>
+        <p>
+            Problems...
+            Would be nice to be able to click on a year and make it stick...
+            Would be nice to select a year from a menu or a table and make it stick...
+            Need to somehow distinguish between mean and median.
+            What's with the dip on day 92 (Jan 1)?
+            Switch between locations?
+            Multiple graphs for different locations (like sveri.uaren.org)?
+        </p>
+        <p>
+            Plot inspired by Mike Crimmins excellent <a href="http://cals.arizona.edu/climate/misc/monsoon/monsoon_summaries.html">Monsoon plots</a>
+            and Ben McMahan and Mike's CLIMAS <a href="http://www.climas.arizona.edu/blog/el-niño-here…what-exactly-does-mean-arizona-and-new-mexico">blog post</a>.
+        </p>
+        <p>
+            Will Holmgren, 2015.
+        </p>
+    </div>
+    
 </div>
 
 </body>
