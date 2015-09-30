@@ -13,6 +13,12 @@ body {
 
 #map-canvas { height: 500px; }
 
+/* 
+a { 
+    text-decoration: none;
+}
+ */
+
 .header p {
     margin-top: 0;
     margin-bottom: 0;
@@ -131,69 +137,5 @@ text.enlarge-shrink-button:hover { cursor: pointer; fill: #0972a5 !important}
 }
 
 
-/*.white div { color: black; background-color: white !important; } // we'll be a bit more specific than this.. below */
-.white .axis path { stroke: black !important; }
-.white .axis line { stroke: black !important; }
-.white text { fill: black !important; }
-.white text.title:hover, .white text.reset:hover { fill: #0972a5 !important; }
-.white g.legend-item text { fill: black !important; }
-.white text.title, .white text.reset { fill: black !important; }
-.white .zoom { background-color: white !important; }
-.white .tooltip { color:#fff; background: rgba(0,0,0,0.7); }
-/* .white #bg :not(.ua-wrapper) { background-image: none; } */
 
-body.white { background:none; }
-body.white #bg { background-size:100% auto; }
-/* body.white #bg { background:none }/ */
-body.white #main { background-color: #fff;color:#000; }
-body.white .ui-widget-content { background: #fff ; color: #000;border-right: 1px solid #ccc!important; }
-body.white .ui-widget-content a { color: #000; }
-body.white .fieldset-desc { color:#666; }
-body.white input, body.white textarea, body.white .ui-widget input, body.white .ui-widget textarea { border:1px solid #ccc!important;color:#000; }
-body.white ul.subnav li.selected { background-color: rgba(51,51,51,0.1); }
-body.white ul.subnav li a { color:#000; }
-body.white ul.subnav li.selected a { color:#000; }
-/* body.white ul.subnav li:hover a,  */
-body.white ul.subnav-generator-list li a:hover  { color: #0972a5; }
-body.white legend { color: #333; }
-body.white .ui-button, body.white input.ui-button, body.white .ui-widget input.ui-button { color: #fff; }
-body.white #leftnav .ui-accordion .ui-accordion-content.subnav-type-content { background-color: #fff;color:#000; }
-body.white #leftnavtoplvlaccordion { border-bottom: 1px solid #ccc!important; }
-body.white .ui-datepicker-calendar a { background: #eeeeee; }
-body.white .ui-datepicker-calendar .ui-state-active { background: #0972a5; }
-/* body.white .ui-state-highlight { background: #b41f2d url() 50% 50% repeat-x; } */
-/* body.white .tooltipable { color: #089be2 } */
-
-.graphpaper .axis path { stroke: black !important; }
-.graphpaper .axis line { stroke: black !important; }
-.graphpaper text { fill: black !important; }
-.graphpaper text.title:hover, .graphpaper text.reset:hover { fill: #0972a5 !important; }
-.graphpaper g.legend-item text { fill: black !important; }
-.graphpaper text.title, .graphpaper text.reset:hover { fill: black !important; }
-.graphpaper .zoom { background-color: transparent !important; }
-.graphpaper .tooltip { color:#fff; background: rgba(0,0,0,0.7); }
-/* .graphpaper #bg :not(.ua-wrapper) { background-image: none; } */
-
-/* body.graphpaper { background:none; } */
-body.graphpaper #bg { background-size:100% auto; }
-/* body.graphpaper #bg { background:none }/ */
-body.graphpaper #main { background-color: transparent;color:#000; }
-body.graphpaper .ui-widget-content { background: #fff; color: #000;border-right: 1px solid #ccc!important; }
-body.graphpaper .ui-widget-content a { color: #000; }
-body.graphpaper .fieldset-desc { color:#666; }
-body.graphpaper input, body.graphpaper textarea, body.graphpaper .ui-widget input, body.graphpaper .ui-widget textarea { border:1px solid #ccc!important;color:#000; }
-body.graphpaper ul.subnav li.selected { background-color: rgba(51,51,51,0.1); }
-body.graphpaper ul.subnav li a { color:#000; }
-body.graphpaper ul.subnav li.selected a { color:#000; }
-/* body.graphpaper ul.subnav li:hover a,  */
-body.graphpaper ul.subnav-generator-list li a:hover { color: #0972a5; }
-body.graphpaper legend { color: #333; }
-body.graphpaper .ui-button, body.graphpaper input.ui-button, body.graphpaper .ui-widget input.ui-button { color: #fff; }
-body.graphpaper #leftnav .ui-accordion .ui-accordion-content.subnav-type-content { background-color: #fff;color:#000; }
-body.graphpaper #leftnavtoplvlaccordion { border-bottom: 1px solid #ccc!important; }
-body.graphpaper .ui-datepicker-calendar a { background: #eeeeee; }
-body.graphpaper .ui-datepicker-calendar .ui-state-active { background: #0972a5; }
-body.graphpaper #contact-form .form-row input, body.graphpaper #contact-form .form-row textarea { background:white }
-/* body.graphpaper .tooltipable { color: #089be2 } */
-/* body.graphpaper #header { background:none;background-color:rgba(51,51,51,0.1); color:#000; } */
 
