@@ -64,20 +64,33 @@
             Years are colored by the JAN-FEB <a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI ENSO value</a>.
             Hover your cursor over a line to get a tooltip with exact values.
             Water year starts on October 1 of the previous year.
-            The plot currently shows Oct-Apr, but it's easy to change it to
-            include the monsoon.
+            The plot currently shows Oct-Apr.
         </p>
         <p>
-            Problems...
-            Would be nice to be able to click on a year and make it stick...
-            Would be nice to select a year from a menu or a table and make it stick...
-            Need to somehow distinguish between mean and median.
-            What's with the dip on day 92 (Jan 1)?
-            Switch between locations?
-            Multiple graphs for different locations (like sveri.uaren.org)?
+            If your plot looks bad or doesn't load then try the <a href="images/precip_static.png">static image</a>.
+            We recommend using Chrome or Safari to view this page.
+            The tooltip does not work properly on many versions of Firefox.
         </p>
         <p>
-            Plot inspired by Mike Crimmins excellent <a href="http://cals.arizona.edu/climate/misc/monsoon/monsoon_summaries.html">Monsoon plots</a>
+            Here are some possible improvements.
+            The source code for this site is on 
+            <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a>
+            so you can easily copy it and play with it.
+            <ul>
+            <li>Add static version of plot and make those links work.</li>
+            <li>Add water year 2016, maybe with a different color/weight. Might need a separate script to automate data collection.</li>
+            <li>Would be nice to be able to click on a year and make it stick...</li>
+            <li>Would be nice to select a year from a menu or a table and make it stick...</li>
+            <li>Add a table of years that highlights the appropriate time series when you roll over the text. Maybe this would also display the tooltip at the end of the year with total precip.</li>
+            <li>Need to somehow distinguish between mean and median.</li>
+            <li>Add switch control for the monsoon season or total year</li>
+            <li>Switch between locations?</li>
+            <li>Multiple graphs for different locations (the d3 chart is written as a closure so this isn't too bad)?</li>
+            <li>Add a control for the MEI month</li>
+            </ul>
+        </p>
+        <p>
+            Plot inspired by Mike Crimmins' excellent <a href="http://cals.arizona.edu/climate/misc/monsoon/monsoon_summaries.html">Monsoon plots</a>
             and Ben McMahan and Mike's CLIMAS <a href="http://www.climas.arizona.edu/blog/el-niño-here…what-exactly-does-mean-arizona-and-new-mexico">blog post</a>.
         </p>
         <p>
