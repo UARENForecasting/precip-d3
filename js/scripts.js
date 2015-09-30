@@ -64,7 +64,9 @@ function precip_parser(d) {
     var waterYearStart = new Date(d.waterYear-1, 9, 1);
     d.waterDay = Math.round((d.date - waterYearStart) / 86400000);
     
-    if (year >= 1950) {
+    // would be best to replace with a more intelligent determination
+    // of if the year has a complete data set.
+    if (d.waterYear > 1950) {
         return d;
     }
 }
@@ -90,6 +92,7 @@ function cumulativePrecipMean(dayOfDataByDay) {
     out = {};
     out.cumulativePrecip = d3.mean(dayOfDataByDay, accessor);
     out.waterDay = dayOfDataByDay[0].waterDay;
+    out.date = dayOfDataByDay[0].date;
     
     return out;
 }
@@ -100,6 +103,7 @@ function cumulativePrecipMedian(dayOfDataByDay) {
     out = {};
     out.cumulativePrecip = d3.median(dayOfDataByDay, accessor);
     out.waterDay = dayOfDataByDay[0].waterDay;
+    out.date = dayOfDataByDay[0].date;
     
     return out;
 }
