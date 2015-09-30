@@ -23,34 +23,27 @@ function precipChart() {
     
     var title = "chart title";
     
+    // x and y axis set up
+    
     // initialize scales. these functions/objects map data values into pixels.
     // once we have data, we'll assign their domains (input data min/max) 
     // and ranges (the pixels that the min/max data should be mapped to)
-    var xScale = d3.scale.linear();//d3.time.scale();
+    //var xScale = d3.scale.linear();
+    var xScale = d3.time.scale();
     var yScale = d3.scale.linear();
     
-    var tmin, tmax, xExtent;
+    // need to define an epoch to plot multiple years on a time axis.
+    // an alternative would be to plot against the waterDay but
+    // implement a custom x tick and tick label function
+    var epochYear = 2015;
+    var tmin = new Date(epochYear, 9, 1);
+    var tmax = new Date(epochYear+1, 4, 0);
+    var xExtent = [tmin, tmax];
+    
     var ymin, ymax, yExtent;
     
-    //var colorScale = d3.scale.category10();
-    var colors =['#2D8098', '#2A6778', '#274E5A', '#24363A', '#212121', '#4D2426', '#7F262E', '#B22833', '#E42A38'].reverse()
-    var colors = colorbrewer.RdYlBu[10]
-    var colorScale = d3.scale.quantize()
-                        .domain([-2.25,2.25])
-                        .range(colors);
-    var eps = .00001;
-    var colorBins = colors.map(function(d){return colorScale.invertExtent(d)[0]+eps});
-    var colorBinLabels = colors.map(function(d){return colorScale.invertExtent(d)[0]});
-    colorBinLabels.push(colorScale.invertExtent(colors[colors.length-1])[1]);
-    
-    var strokeWidthNormal = 1;
-    var strokeOpacityNormal = 0.75;
-    var strokeWidthHighlighted = 5;
-    var strokeOpacityHighlighted = 1;
-    
-    var ensoBin = "JANFEB";
-    
     // calculate offsets for time zones.
+    // not used here?
     var tzUTCoffset = new Date().getTimezoneOffset();
     var tzMSToffset = (420 - tzUTCoffset)*1000*60; //convert to milliseconds
     var tzOffset = tzMSToffset;
@@ -63,14 +56,13 @@ function precipChart() {
       ["%H:00", function(d) { return d.getHours(); }],
       ["%-m/%-d", function(d) { return d.getDate() != 1; }],
       ["%b", function(d) { return d.getMonth(); }],
-      ["%Y", function() { return true; }]
-    ]);   
-    //["%-m/%e", function(d) { return d.getDay() && d.getDate() != 1; }], 
+      ["%b", function(d) { return true; }] // plot 'Jan' instead of year number
+    ]);
                  
     var xAxis = d3.svg.axis()
                         .scale(xScale)
                         .orient("bottom")
-                        //.tickFormat(customTimeFormat)
+                        .tickFormat(customTimeFormat)
                         .ticks(10);
 
     var yAxis = d3.svg.axis()
@@ -80,8 +72,43 @@ function precipChart() {
 
     // define line drawing function
     var line = d3.svg.line()
-                    .x(function(d) { return xScale(d.waterDay); })
+                    //.x(function(d) { return xScale(d.waterDay); })
+                    .x(function(d) { return xScale(getPlotDate(d.date)); })
                     .y(function(d) { return yScale(d.cumulativePrecip); });
+                    
+                    
+    var xLabel = "Water Year";
+    var yLabel = "Cumulative Precipitation (in)";
+    
+    // set up label offsets
+    var tzLabelOffset = 40;
+    var tzLabelX = function() { return innerWidth - tzLabelOffset };
+    var tzLabelY = 40;
+    
+    
+    // construct the color scale (the code, not the legend)
+    //var colors =['#2D8098', '#2A6778', '#274E5A', '#24363A', '#212121', '#4D2426', '#7F262E', '#B22833', '#E42A38'].reverse()
+    var colors = colorbrewer.RdYlBu[10]
+//     var colorDomain = [-2.5,2.5];
+    var colorDomain = [-2.25,2.25];
+//     var colorDomain = [-2,2];
+    var colorScale = d3.scale.quantize().domain(colorDomain).range(colors);
+    
+    // make stuff for legend.
+    // the values at which the color bins will be evaluated.
+    // add a little bit to the divider values to remove float weirdness.
+    var eps = .0000001;
+    var colorBins = colors.map(function(d){return colorScale.invertExtent(d)[0]+eps});
+    // the labels for the color bins
+    var colorBinLabels = colors.map(function(d){return colorScale.invertExtent(d)[0]});
+    colorBinLabels.push(colorScale.invertExtent(colors[colors.length-1])[1]);
+    
+    var strokeWidthNormal = 1;
+    var strokeOpacityNormal = 0.75;
+    var strokeWidthHighlighted = 5;
+    var strokeOpacityHighlighted = 1;
+    
+    var ensoBin = "JANFEB";   
     
     var tooltip;
     
@@ -90,10 +117,7 @@ function precipChart() {
     var legendXtranslate = 15;
     var legendYtranslate = 5;
     
-    // set up offsets and functions to determine button positions
-    var tzLabelOffset = 80;
-    var tzLabelX = function() { return innerWidth - tzLabelOffset };
-    var tzLabelY = 40;
+    
     
     // these set the y axis limits relative to the max/min measurement values
     var maxExpand = 1.22;
@@ -126,7 +150,7 @@ function precipChart() {
                     .attr("text-anchor", "middle")
                     .attr("dx", tzLabelX)
                     .attr("dy", tzLabelY)
-                    .text("Day of Water Year");
+                    .text(xLabel);
                     
             gEnter.append("g")
                     .attr("class", "y axis")
@@ -135,43 +159,12 @@ function precipChart() {
                     .attr("y", 6)
                     .attr("dy", "-4.5em")
                     .style("text-anchor", "end")
-                    .text("Cumulative Precipitation (in)");  
+                    .text(yLabel);  
             
             gEnter.append("text")
                     .attr("class", "title") 
             
-            var barHeight = 20;
-            var barWidth = 20;
-            var barYOffset = 20;
-            var barXOffset = 20;
-            
-            bars = gEnter.selectAll("rect.colorbar").data(colorBins.reverse()).enter()
-            bars.append("rect")
-                    .attr({
-                        width: barWidth,
-                        height: barHeight,
-                        y: function(d,i) {
-                          return i * barHeight + barYOffset;
-                        },
-                        x: barXOffset,
-                        fill: function(d,i) {
-                          return colorScale(d+.0001);
-                        }
-                      })
-            
-            labels = gEnter.selectAll("text.colorbarlabels").data(colorBinLabels.reverse()).enter()
-            labels.append("text")
-                    .attr({
-                        y: function(d,i) {
-                          return (i+0.25) * barHeight + barYOffset;
-                        },
-                        x: barXOffset + 35 + barWidth,
-                      })
-                    .style("text-anchor", "end")
-                    .text(function(d,i) { console.log(d); return parseFloat(d).toFixed(2) });
-            gEnter.append("text")
-                .attr({x: barXOffset , y:barYOffset-barHeight/2})
-                .text('MEI')
+            gEnter = createColorbar(gEnter);
             
             if (enlargeAllowed) {
                 gEnter.append("text")
@@ -270,7 +263,7 @@ function precipChart() {
 //                 tmin = tmin ? d3.time.day.floor(tmin) : 0;
 //                 tmax = tmax ? d3.time.day.ceil(tmax) : 0;
 //             }
-           tmin = 0; tmax = 210;
+           //tmin = 0; tmax = 210;
            xExtent = [tmin, tmax];
             //console.log("xExtent: ", xExtent);
             
@@ -284,17 +277,17 @@ function precipChart() {
             //console.log("yExtent: ", yExtent);
             
             // Update the x-scale. 
-            xScale
-                .domain(xExtent)
-                .range([0, innerWidth]);
+            xScale.domain(xExtent)
+                  .range([0, innerWidth]);
 
             // Update the y-scale.
-            yScale
-                .domain(yExtent)
-                .range([height - margin.top - margin.bottom, 0]);
+            yScale.domain(yExtent)
+                  .range([height - margin.top - margin.bottom, 0]);
                 
             // finally draw/redraw the lines using the new scale
-            remainingLines.attr("d", function(d) { return line(d.values); } )
+            remainingLines.attr("d", function(d) {
+                return line(d.values.filter(function(d2) { return getPlotDate(d2.date) < tmax }) )
+                         })
                           .attr("class", "line")
                           .attr("stroke", getENSOcolor )
                           .attr("stroke-width", get_strokeWidthNormal)
@@ -326,6 +319,50 @@ function precipChart() {
             }
         }); // end of selection.each()
     }; // end of chart()
+    
+    function createColorbar(gEnter) {
+        // create colorbar for legend
+        // http://tributary.io/tributary/3650755/
+        var barHeight = 20;
+        var barWidth = 20;
+        var barYOffset = 20;
+        var barXOffset = 20;
+        
+        var bars = gEnter.selectAll("rect.colorbar").data(colorBins.reverse()).enter()
+        bars.append("rect")
+                .attr({
+                    width: barWidth,
+                    height: barHeight,
+                    y: function(d,i) {
+                      return i * barHeight + barYOffset;
+                    },
+                    x: barXOffset,
+                    fill: function(d,i) {
+                      return colorScale(d+.0001);
+                    }
+                  })
+        
+        var labels = gEnter.selectAll("text.colorbarlabels").data(colorBinLabels.reverse()).enter()
+        labels.append("text")
+                .attr({
+                    y: function(d,i) {
+                      return (i+0.25) * barHeight + barYOffset;
+                    },
+                    x: barXOffset + 35 + barWidth,
+                  })
+                .style("text-anchor", "end")
+                .text(function(d,i) { console.log(d); return parseFloat(d).toFixed(2) });
+        gEnter.append("text")
+            .attr({x: barXOffset , y:barYOffset-barHeight/2})
+            .text('MEI')
+        
+        return gEnter
+    }
+    
+    function getPlotDate(d) {
+        var year = d.getMonth() > 8 ? epochYear : epochYear + 1;
+        return (new Date(d)).setFullYear(year);
+    }
     
     function getENSOvalue(d) {
         var ensoval;
@@ -360,6 +397,24 @@ function precipChart() {
         } else {
             return strokeOpacityNormal;
         }
+    }
+    
+    function invertxpnt(xpnt) {
+        var xval = xScale.invert(xpnt);
+        xval = Math.floor(xval);
+        
+        xval = new Date(xval);
+        //console.log(xval);
+        
+        var out = {}
+        var year = xval.getFullYear();
+        var waterYear = xval.getMonth() > 8 ? year + 1 : year;
+        var waterYearStart = new Date(waterYear-1, 9, 1);
+        
+        out.waterDay = Math.round((xval - waterYearStart) / 86400000);
+        out.date = xval
+        
+        return out;
     }
     
     // accessor methods
@@ -417,12 +472,30 @@ function precipChart() {
         return chart;
     };
     
-    chart.xExtent = function() {
-        return xExtent;
+    chart.xExtent = function(_) {
+        if (!arguments.length) return xExtent;
+        xExtent = _;
+        tmin = xExtent[0];
+        tmax = xExtent[1];
+        return chart;
     }
     
-    chart.yExtent = function() {
-        return yExtent;
+    chart.yExtent = function(_) {
+        if (!arguments.length) return yExtent;
+        yExtent = _;
+        return chart;
+    }
+    
+    chart.xScale = function(_) {
+        if (!arguments.length) return xScale;
+        xScale = _;
+        return chart;
+    }
+    
+    chart.yScale = function(_) {
+        if (!arguments.length) return yScale;
+        yScale = _;
+        return chart;
     }
     
     chart.colorScale = function() {
@@ -437,7 +510,7 @@ function precipChart() {
         return colorBinLabels;
     }
     
-    chart.resize = function() {
+    chart.redraw = function() {
         containingSelection = d3.select(containingDivId);
         containingSelection.call(chart, [], true);
         return chart;
@@ -512,15 +585,17 @@ function precipChart() {
         
         // I think that this can be removed since lineMousemove should also get called
         var point = d3.mouse(this);
-        var xval = xScale.invert(point[0]);
-        xval = Math.floor(xval);
-        var yval = thisLineData.values[xval].cumulativePrecip;
+        
+        var xdata = invertxpnt(point[0]);
+        
+        var yval = thisLineData.values[xdata.waterDay].cumulativePrecip;
         var yval = parseFloat(yval.toPrecision(3)) + " in";
         
         var ensoval = getENSOvalue(thisLineData);
                 
-        var text = createTooltipText(thisLineData.key, String(yval), 'Day '+xval, 'MEI: '+ensoval);
-
+        //var text = createTooltipText(thisLineData.key, String(yval), 'Day '+xdata.waterDay, 'MEI: '+ensoval, xdata.date);
+        var text = createTooltipText(thisLineData.key, xdata.date, xdata.waterDay, String(yval), ensoval);
+        
         var tooltip = d3.select(this.parentNode.parentNode.parentNode.parentNode).select(".tooltip");
         tooltip.html(text)
                 .style("visibility", "visible");
@@ -530,14 +605,15 @@ function precipChart() {
         var thisLine = d3.select(this);
         var thisLineData = thisLine.data()[0];
         var point = d3.mouse(this);
-        var xval = xScale.invert(point[0]);
-        xval = Math.floor(xval);
-        var yval = thisLineData.values[xval].cumulativePrecip;
+        
+        var xdata = invertxpnt(point[0]);
+        
+        var yval = thisLineData.values[xdata.waterDay].cumulativePrecip;
         var yval = parseFloat(yval.toPrecision(4)) + " in";
         
         var ensoval = getENSOvalue(thisLineData);
         
-        var text = createTooltipText(thisLineData.key, String(yval), 'Day '+xval, 'MEI: '+ensoval);
+        var text = createTooltipText(thisLineData.key, xdata.date, xdata.waterDay, String(yval), ensoval);
         
         var tooltip = d3.select(this.parentNode.parentNode.parentNode.parentNode).select(".tooltip");
 
@@ -596,14 +672,16 @@ function precipChart() {
 }
 
 
+var tooltipDateFormatter = d3.time.format('%b %d');
 
-function createTooltipText(name, mw, date, enso) {
+function createTooltipText(name, date, day, precip, enso) {
     // [jd:] move this logic to a function to only have to manipulate once
     sRet = '';
     sRet += '<div class="tooltip-name">' + name + "</div>";
-    sRet += '<div class="tooltip-date">' + date.toLocaleString() + '</div>';
-    sRet += '<div class="tooltip-value">' + mw + '</div>';
-    sRet += '<div class="tooltip-value">' + enso + '</div>';
+    sRet += '<div class="tooltip-date">' + tooltipDateFormatter(date) + '</div>';
+    sRet += '<div class="tooltip-date">' + 'Day ' + day + '</div>';
+    sRet += '<div class="tooltip-value">' + precip + '</div>';
+    sRet += '<div class="tooltip-value">' + 'MEI: ' + enso + '</div>';
     
     return sRet;
 }
