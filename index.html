@@ -64,28 +64,30 @@
             Years are colored by the JAN-FEB <a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI ENSO value</a>.
             Hover your cursor over a line to get a tooltip with exact values.
             Water year starts on October 1 of the previous year.
-            The plot currently shows Oct-Apr.
+            What will water year 2016 bring?
         </p>
         <p>
             If your plot looks bad or doesn't load then try the <a href="images/precip_static.png">static image</a>.
             We recommend using Chrome or Safari to view this page.
             The tooltip does not work properly on many versions of Firefox.
         </p>
+        <p>The plot is made with <a href="http://d3js.org">d3js</a>.</p>
+        <p>Precipitation data comes from the <a href="http://www.ncdc.noaa.gov">NCDC</a> daily summaries archive.</p>
+        <p>ENSO data comes from <a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">ESRL</a>.</p>
         <p>
             Here are some possible improvements.
             The source code for this site is on 
             <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a>
             so you can easily copy it and play with it.
+            We welcome your contributions to make this a better tool.
             <ul>
-            <li>Add static version of plot and make those links work.</li>
-            <li>Add water year 2016, maybe with a different color/weight. Might need a separate script to automate data collection.</li>
-            <li>Would be nice to be able to click on a year and make it stick...</li>
-            <li>Would be nice to select a year from a menu or a table and make it stick...</li>
+            <li>Add water year 2016, maybe with a different weight. Might need a separate script to automate data collection.</li>
+            <li>Would be nice to be able to click on a year and make it stick.</li>
+            <li>Would be nice to select a year from a menu or a table and make it stick.</li>
             <li>Add a table of years that highlights the appropriate time series when you roll over the text. Maybe this would also display the tooltip at the end of the year with total precip.</li>
-            <li>Need to somehow distinguish between mean and median.</li>
-            <li>Add switch control for the monsoon season or total year</li>
-            <li>Switch between locations?</li>
-            <li>Multiple graphs for different locations (the d3 chart is written as a closure so this isn't too bad)?</li>
+            <li>Need to distinguish between mean and median.</li>
+            <li>Add switch control for the monsoon season or total year.</li>
+            <li>Switch between locations, or use multiple graphs for different locations.</li>
             <li>Add a control for the MEI month</li>
             </ul>
         </p>
