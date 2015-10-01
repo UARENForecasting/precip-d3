@@ -7,8 +7,11 @@ Precipitation data comes from the [NCDC](http://www.ncdc.noaa.gov) daily summari
 
 ENSO data comes from [ESRL](http://www.esrl.noaa.gov/psd/enso/mei/table.html).
 
+We welcome comments and improvements. 
 You should be able to clone this repo onto any web server, point your browser at the directory, and it should just work.
-We welcome any comments and improvements.
+This project is MIT Licensed, so you can pretty much do whatever you want with it.
+The most important exception is that you cannot use the UA logo unless you have obtained permission from UA.
+See the license file for more information.
 
 A brief guide to the repo:
 
