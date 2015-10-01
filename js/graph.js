@@ -36,11 +36,22 @@ function precipChart() {
     // an alternative would be to plot against the waterDay but
     // implement a custom x tick and tick label function
     var epochYear = 2015;
-    var tmin = new Date(epochYear, 9, 1);
-    var tmax = new Date(epochYear+1, 4, 0);
-    var xExtent = [tmin, tmax];
+    var tmin_cool = new Date(epochYear, 9, 1);
+    var tmax_cool = new Date(epochYear+1, 4, 0);
+    var tmin_monsoon = new Date(epochYear+1, 5, 1);
+    var tmax_monsoon = new Date(epochYear+1, 9, 0);
+    var tmin_full = new Date(epochYear, 9, 1);
+    var tmax_full = new Date(epochYear+1, 9, 0);
     
-    var ymin, ymax, yExtent;
+    var xExtent = [tmin_cool, tmax_cool];
+    
+    var ymin_cool = 0;
+    var ymax_cool = 12;
+    var ymin_monsoon = 0;
+    var ymax_monsoon = 12;
+    var ymin_full = 0;
+    var ymax_full = 20;
+    var yExtent = [ymin_cool, ymax_cool];
     
     // calculate offsets for time zones.
     // not used here?
@@ -166,6 +177,8 @@ function precipChart() {
             
             gEnter = createColorbar(gEnter);
             
+            gEnter = createSeasonControl(gEnter);
+            
             if (enlargeAllowed) {
                 gEnter.append("text")
                         .attr("class", "enlarge-shrink-button")
@@ -264,17 +277,17 @@ function precipChart() {
 //                 tmax = tmax ? d3.time.day.ceil(tmax) : 0;
 //             }
            //tmin = 0; tmax = 210;
-           xExtent = [tmin, tmax];
-            //console.log("xExtent: ", xExtent);
+//             xExtent = [tmin, tmax];
+            console.log("xExtent: ", xExtent);
             
 //             ymin = d3.min(ymins, function(d) { return d; });
 //             ymax = d3.max(ymaxes, function(d) { return d; });
 //             if (typeof ymax === "undefined") {
 //                 ymax = 1000;
 //             }
-           yExtent = [ymin*minExpand, ymax*maxExpand];
-           yExtent = [0, 12];
-            //console.log("yExtent: ", yExtent);
+//             yExtent = [ymin*minExpand, ymax*maxExpand];
+//             yExtent = [0, 12];
+            console.log("yExtent: ", yExtent);
             
             // Update the x-scale. 
             xScale.domain(xExtent)
@@ -286,7 +299,7 @@ function precipChart() {
                 
             // finally draw/redraw the lines using the new scale
             remainingLines.attr("d", function(d) {
-                return line(d.values.filter(function(d2) { return getPlotDate(d2.date) < tmax }) )
+                return line(d.values.filter(function(d2) { return getPlotDate(d2.date) < xExtent[1] }) )
                          })
                           .attr("class", "line")
                           .attr("stroke", getENSOcolor )
@@ -357,6 +370,26 @@ function precipChart() {
             .text('MEI')
         
         return gEnter
+    }
+    
+    function createSeasonControl(gEnter) {
+        var seasonXOffset = 100;
+        var seasonYOffset = 20;
+        var spacing = 20;
+        
+        var seasonData = [{"season":"Cool season", "func":chart.coolSeason },
+                          {"season":"Full year", "func":chart.fullYear }]
+        
+        var seasons = gEnter.selectAll("text.seasonControl").data(seasonData).enter()
+        seasons.append("text")
+            .attr({
+                x: seasonXOffset,
+                y: function(d,i) { return i * spacing + seasonYOffset }
+                })
+            .text(function(d){return d.season})
+            .attr("class", "season-control")
+            .on("click", function(d) { d.func() } )
+        return gEnter;
     }
     
     function getPlotDate(d) {
@@ -496,6 +529,21 @@ function precipChart() {
         if (!arguments.length) return yScale;
         yScale = _;
         return chart;
+    }
+    
+    chart.coolSeason = function() {
+        xExtent = [tmin_cool, tmax_cool];
+        yExtent = [ymin_cool, ymax_cool];
+        console.log($(this));
+        $(this).attr("stroke", "red");
+        return chart.redraw();
+    }
+    
+    chart.fullYear = function() {
+        xExtent = [tmin_full, tmax_full];
+        yExtent = [ymin_full, ymax_full];
+        
+        return chart.redraw();
     }
     
     chart.colorScale = function() {
