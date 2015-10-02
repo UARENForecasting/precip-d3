@@ -18,6 +18,9 @@ a {
     text-decoration: none;
 }
  */
+ 
+a:link    { color: rgb(49, 54, 149) }  /* unvisited links */
+a:visited { color: rgb(49, 54, 149) }  /* visited links   */
 
 .header p {
     margin-top: 0;
@@ -28,15 +31,38 @@ a {
 
 .season-control:hover {color: red; cursor: pointer;}
 
+#data {
+    padding-top: 20px;
+}
+
 #intro {
     display: inline-block;
-    padding: 10px;
+    padding-left: 40px;
+    padding-right: 40px;
 }
 
 .chart {
     float:left;
     max-width: 100%;
 }
+
+.active {
+    font-weight: 900;
+/*     text-decoration: underline; */
+    border-bottom:1px solid #000;
+    padding-bottom:0px;
+}
+
+table.year-selector { 
+    margin-left: auto;
+    margin-right: auto;
+    border-collapse: separate;
+/*     border-spacing: 2px 1px; */
+    padding-bottom: 1px
+    font-weight: 700;
+}
+
+.year-selector:hover {color: red; cursor: pointer;}
 
 .axis line,
 .axis path {

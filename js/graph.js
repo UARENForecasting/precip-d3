@@ -160,6 +160,8 @@ function precipChart() {
             var gEnter = svg.enter().insert("svg", ":first-child")
                                     .append("g");                         
             
+            console.log(gEnter);
+            
             gEnter = createAxesAndLabels(gEnter);
             
             gEnter.append("text")
@@ -216,7 +218,8 @@ function precipChart() {
             linesEnter.append("path")
                         .on("mouseover", chart.lineMouseover)
                         .on("mousemove", chart.lineMousemove)
-                        .on("mouseout", chart.lineMouseout);
+                        .on("mouseout", chart.lineMouseout)
+                        .on("click", chart.lineClick);
             
             // EXIT
             // Applies to the old data only            
@@ -327,6 +330,33 @@ function precipChart() {
             if (newData.length > 0) {
                 //hideLoadingDialog();
             }
+            
+            // create year table DOM element
+            var table = containingSelection.selectAll("table").data([1])
+                                                              .enter()
+                                                              .append("table")
+                                                              .attr("class", "year-selector")
+            
+            // nest data by decade
+            var nestedYears = d3.nest().key(function (d) { return Math.floor((+d.key-11)/20); })
+                                       .entries(newData);
+            
+            console.log("nestedYears: ", nestedYears);
+            
+            var tr = containingSelection.select("table").selectAll("tr")
+                                            .data(nestedYears)
+                                            .enter()
+                                            .append("tr");
+            
+            var td = tr.selectAll("td").data(function (d) { return d.values })
+                                        .enter()
+                                        .append("td")
+                                        .html(function(d) {return d.key})
+                                        .style("color", getENSOcolor )
+                                        .on("click", chart.tableYearClick)
+                                        .on("mouseover", chart.tableYearMouseover)
+                                        .on("mouseout", chart.tableyearMouseout);
+            
         }); // end of selection.each()
     }; // end of chart()
     
@@ -809,12 +839,80 @@ function precipChart() {
         setCursor("default");// [jd:] trying an improved UI
         var tooltip = d3.select(this.parentNode.parentNode.parentNode.parentNode).select(".tooltip");
         var thisSelection = d3.select(this)
-
-        thisSelection.style("stroke-width", get_strokeWidthNormal);
-        thisSelection.style("stroke-opacity", get_strokeOpacityNormal);
+        
+        var active = thisSelection.classed("active");
+        if (!active) {
+            thisSelection.style("stroke-width", get_strokeWidthNormal);
+            thisSelection.style("stroke-opacity", get_strokeOpacityNormal);
+        }
 
         tooltip.style("visibility", "hidden");
     };
+    
+    chart.lineClick = function(d, i) {
+        var thisSelection = d3.select(this)
+        var active = thisSelection.classed("active");
+        thisSelection.classed("active", !active);
+        
+        var data = thisSelection.data()[0];
+
+        var yearText = d3.select(containingDivId).selectAll("td")
+                        .filter(function(d) { return d.key == data.key })
+                        
+        yearText.classed("active", !active);
+
+    }
+    
+    chart.tableYearClick = function (d, i) {
+        var thisSelection = d3.select(this)
+        var active = thisSelection.classed("active");
+        thisSelection.classed("active", !active);
+        
+        var data = thisSelection.data()[0];
+
+        var yearLine = d3.select(containingDivId).selectAll("g.gen_data path")
+                        .filter(function(d) { return d.key == data.key })
+                        
+        yearLine.classed("active", !active);
+
+    }
+    
+    chart.tableYearMouseover = function (d, i) {
+        var thisSelection = d3.select(this)
+        
+        var data = thisSelection.data()[0];
+        
+        //console.log(data);
+        
+        var yearLine = d3.select(containingDivId).selectAll("g.gen_data path")
+                            .filter(function(d) { return d.key == data.key })
+        
+        //console.log("tableYearMouseover yearLine: ", yearLine);
+        
+        yearLine.style("stroke-width", strokeWidthHighlighted);
+        yearLine.style("stroke-opacity", strokeOpacityHighlighted);
+    }
+    
+    chart.tableyearMouseout = function (d, i) {
+        var thisSelection = d3.select(this)
+        var active = thisSelection.classed("active");
+        //thisSelection.classed("active", !currentClass);
+        
+        var data = thisSelection.data()[0];
+        
+        if (!active) {
+            var yearLine = d3.select(containingDivId).selectAll("g.gen_data path")
+                                .filter(function(d) { return d.key == data.key })
+                            
+            //console.log("tableyearMouseexit yearLine: ", yearLine);
+        
+            yearLine.style("stroke-width", get_strokeWidthNormal);
+            yearLine.style("stroke-opacity", get_strokeWidthNormal);
+            yearLine.classed("active", false);
+        } else {
+            //console.log("tableyearMouseexit. active was true for ", data.key);
+        }
+    }
     
     chart.buttonMouseover = function(d,i) {
         var thisSelection = d3.select(this);
