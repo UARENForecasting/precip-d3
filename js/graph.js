@@ -35,10 +35,11 @@ function precipChart() {
     // need to define an epoch to plot multiple years on a time axis.
     // an alternative would be to plot against the waterDay but
     // implement a custom x tick and tick label function
+    // tmins and tmaxes are inclusive. 0 day is the end of the previous month
     var epochYear = 2015;
     var tmin_cool = new Date(epochYear, 9, 1);
-    var tmax_cool = new Date(epochYear+1, 4, 0);
-    var tmin_monsoon = new Date(epochYear+1, 5, 0);
+    var tmax_cool = new Date(epochYear+1, 5, 0);
+    var tmin_monsoon = new Date(epochYear+1, 6, 1);
     var tmax_monsoon = new Date(epochYear+1, 9, 0);
     var tmin_full = new Date(epochYear, 9, 1);
     var tmax_full = new Date(epochYear+1, 9, 0);
