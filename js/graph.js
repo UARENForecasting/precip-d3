@@ -38,10 +38,12 @@ function precipChart() {
     var epochYear = 2015;
     var tmin_cool = new Date(epochYear, 9, 1);
     var tmax_cool = new Date(epochYear+1, 4, 0);
-    var tmin_monsoon = new Date(epochYear+1, 5, 1);
+    var tmin_monsoon = new Date(epochYear+1, 5, 0);
     var tmax_monsoon = new Date(epochYear+1, 9, 0);
     var tmin_full = new Date(epochYear, 9, 1);
     var tmax_full = new Date(epochYear+1, 9, 0);
+    
+    var accumulationOffsetDay = -1;
     
     var xExtent = [tmin_cool, tmax_cool];
     
@@ -74,7 +76,7 @@ function precipChart() {
                         .scale(xScale)
                         .orient("bottom")
                         .tickFormat(customTimeFormat)
-                        .ticks(10);
+                        .ticks(d3.time.months);
 
     var yAxis = d3.svg.axis()
                         .scale(yScale)
@@ -85,10 +87,11 @@ function precipChart() {
     var line = d3.svg.line()
                     //.x(function(d) { return xScale(d.waterDay); })
                     .x(function(d) { return xScale(getPlotDate(d.date)); })
-                    .y(function(d) { return yScale(d.cumulativePrecip); });
+                    .y(function(d) { return yScale(d.cumulativePrecipPlot); });
                     
                     
-    var xLabel = "Water Year";
+    //var xLabel = "Water Year";
+    var xLabel = "";
     var yLabel = "Cumulative Precipitation (in)";
     
     // set up label offsets
@@ -154,23 +157,7 @@ function precipChart() {
             var gEnter = svg.enter().insert("svg", ":first-child")
                                     .append("g");                         
             
-            // build axes and labels
-            gEnter.append("g")
-                    .attr("class", "x axis")
-                  .append("text")
-                    .attr("text-anchor", "middle")
-                    .attr("dx", tzLabelX)
-                    .attr("dy", tzLabelY)
-                    .text(xLabel);
-                    
-            gEnter.append("g")
-                    .attr("class", "y axis")
-                  .append("text")
-                    .attr("transform", "rotate(-90)")
-                    .attr("y", 6)
-                    .attr("dy", "-4.5em")
-                    .style("text-anchor", "end")
-                    .text(yLabel);  
+            gEnter = createAxesAndLabels(gEnter);
             
             gEnter.append("text")
                     .attr("class", "title") 
@@ -296,11 +283,24 @@ function precipChart() {
             // Update the y-scale.
             yScale.domain(yExtent)
                   .range([height - margin.top - margin.bottom, 0]);
-                
+            
+            remainingLines.each(function(d) {
+                var startprecip = d.values[accumulationOffsetDay]
+                startprecip = (typeof(startprecip) === "undefined") ? 0 : startprecip.cumulativePrecip
+                d.values.forEach(function(d2, i) {
+                    d2.plotDate = getPlotDate(d2.date);
+                    d2.cumulativePrecipPlot = d2.cumulativePrecip - startprecip;
+                })
+            })
+            
             // finally draw/redraw the lines using the new scale
             remainingLines.attr("d", function(d) {
-                return line(d.values.filter(function(d2) { return getPlotDate(d2.date) < xExtent[1] }) )
-                         })
+                return line(d.values
+                                .filter(function(d2) { 
+                                    var plotDate = getPlotDate(d2.date);
+                                    return (xExtent[0] <= plotDate) && (plotDate <= xExtent[1]);
+                                })
+                          )})
                           .attr("class", "line")
                           .attr("stroke", getENSOcolor )
                           .attr("stroke-width", get_strokeWidthNormal)
@@ -332,6 +332,29 @@ function precipChart() {
             }
         }); // end of selection.each()
     }; // end of chart()
+    
+    
+    function createAxesAndLabels(gEnter) {
+        // build axes and labels
+        gEnter.append("g")
+                .attr("class", "x axis")
+              .append("text")
+                .attr("text-anchor", "middle")
+                .attr("dx", tzLabelX)
+                .attr("dy", tzLabelY)
+                .text(xLabel);
+                
+        gEnter.append("g")
+                .attr("class", "y axis")
+              .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", "-4.5em")
+                .style("text-anchor", "end")
+                .text(yLabel);
+        
+        return gEnter;
+    }
     
     function createColorbar(gEnter) {
         // create colorbar for legend
@@ -377,8 +400,9 @@ function precipChart() {
         var seasonYOffset = 20;
         var spacing = 20;
         
-        var seasonData = [{"season":"Cool season", "func":chart.coolSeason },
-                          {"season":"Full year", "func":chart.fullYear }]
+        var seasonData = [{"season":"Cool season", "func":chart.coolSeason, "dflt":"true"},
+                          {"season":"Monsoon season", "func":chart.monsoonSeason},
+                          {"season":"Full year", "func":chart.fullYear}]
         
         var seasons = gEnter.selectAll("text.seasonControl").data(seasonData).enter()
         seasons.append("text")
@@ -388,10 +412,12 @@ function precipChart() {
                 })
             .text(function(d){return d.season})
             .attr("class", "season-control")
+            .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
             .on("click", function(d) { d.func() } )
         return gEnter;
     }
     
+    // function that enables year wrapping
     function getPlotDate(d) {
         var year = d.getMonth() > 8 ? epochYear : epochYear + 1;
         return (new Date(d)).setFullYear(year);
@@ -430,24 +456,6 @@ function precipChart() {
         } else {
             return strokeOpacityNormal;
         }
-    }
-    
-    function invertxpnt(xpnt) {
-        var xval = xScale.invert(xpnt);
-        xval = Math.floor(xval);
-        
-        xval = new Date(xval);
-        //console.log(xval);
-        
-        var out = {}
-        var year = xval.getFullYear();
-        var waterYear = xval.getMonth() > 8 ? year + 1 : year;
-        var waterYearStart = new Date(waterYear-1, 9, 1);
-        
-        out.waterDay = Math.round((xval - waterYearStart) / 86400000);
-        out.date = xval
-        
-        return out;
     }
     
     // accessor methods
@@ -532,18 +540,60 @@ function precipChart() {
     }
     
     chart.coolSeason = function() {
+        accumulationOffsetDay = -1;
+        
         xExtent = [tmin_cool, tmax_cool];
         yExtent = [ymin_cool, ymax_cool];
-        console.log($(this));
-        $(this).attr("stroke", "red");
+        
+        seasonsControls = d3.selectAll(".season-control");
+        seasonsControls
+            .filter(function(d) { return d.season.toLowerCase().indexOf("cool") > -1 })
+            .attr("fill", "black")
+        seasonsControls
+            .filter(function(d) { return d.season.toLowerCase().indexOf("cool") == -1 })
+            .attr("fill", "gray")
+            
+        return chart.redraw();
+    }
+    
+    chart.monsoonSeason = function() {
+        accumulationOffsetDay = 242;
+        
+        xExtent = [tmin_monsoon, tmax_monsoon];
+        yExtent = [ymin_monsoon, ymax_monsoon];
+        
+        seasonsControls = d3.selectAll(".season-control");
+        seasonsControls
+            .filter(function(d) { return d.season.toLowerCase().indexOf("monsoon") > -1 })
+            .attr("fill", "black")
+        seasonsControls
+            .filter(function(d) { return d.season.toLowerCase().indexOf("monsoon") == -1 })
+            .attr("fill", "gray")
+            
         return chart.redraw();
     }
     
     chart.fullYear = function() {
+        accumulationOffsetDay = -1;
+        
         xExtent = [tmin_full, tmax_full];
         yExtent = [ymin_full, ymax_full];
         
+        seasonsControls = d3.selectAll(".season-control");
+        seasonsControls
+            .filter(function(d) { return d.season.toLowerCase().indexOf("full") > -1 })
+            .attr("fill", "black")
+        seasonsControls
+            .filter(function(d) { return d.season.toLowerCase().indexOf("full") == -1 })
+            .attr("fill", "gray")
+            
         return chart.redraw();
+    }
+    
+    chart.accumulationOffsetDay = function(_) {
+        if (!arguments.length) return accumulationOffsetDay;
+        accumulationOffsetDay = _;
+        return chart;
     }
     
     chart.colorScale = function() {
@@ -619,6 +669,29 @@ function precipChart() {
         return chart;
     };
     
+    function invertxpnt(xpnt) {
+        var xval = xScale.invert(xpnt);
+        xval = Math.floor(xval);
+        
+        xval = new Date(xval)
+        xval.setHours(12)
+        xval.setMinutes(0)
+        xval.setSeconds(0);
+        //console.log(xval);
+        
+        var out = {}
+        var year = xval.getFullYear();
+        var waterYear = xval.getMonth() > 8 ? year + 1 : year;
+        var waterYearStart = new Date(waterYear-1, 9, 1);
+        
+        out.waterDay = Math.round((xval - waterYearStart) / 86400000);
+        out.date = xval
+        
+        //console.log(out);
+        
+        return out;
+    }
+    
     // functions for making the tool tip work
     chart.lineMouseover = function (d, i) {
         setCursor("crosshair"); // [jd:] trying an improved UI
@@ -636,7 +709,7 @@ function precipChart() {
         
         var xdata = invertxpnt(point[0]);
         
-        var yval = thisLineData.values[xdata.waterDay].cumulativePrecip;
+        var yval = thisLineData.values[xdata.waterDay-1].cumulativePrecipPlot;
         var yval = parseFloat(yval.toPrecision(3)) + " in";
         
         var ensoval = getENSOvalue(thisLineData);
@@ -656,7 +729,7 @@ function precipChart() {
         
         var xdata = invertxpnt(point[0]);
         
-        var yval = thisLineData.values[xdata.waterDay].cumulativePrecip;
+        var yval = thisLineData.values[xdata.waterDay-1].cumulativePrecipPlot;
         var yval = parseFloat(yval.toPrecision(4)) + " in";
         
         var ensoval = getENSOvalue(thisLineData);
