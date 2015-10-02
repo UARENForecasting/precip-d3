@@ -159,7 +159,7 @@ function mei_callback(error, rows) {
 function initializePlots() {
     
     var chartMetadata = [
-         {id:"Tucson", title:"Tucson"},
+         {id:"Tucson", title:"Tucson Cumulative Precipitation"},
          ];
     
     newChartDivs = d3.select(dataDiv).selectAll("div .chart")
@@ -179,7 +179,7 @@ function initializePlots() {
     tucsonChart = precipChart().width(chartWidth)
                                 .height(chartHeight)
                                 .margin(margin)
-                                .title("Tucson");
+                                .title("Tucson Cumulative Precipitation");
     
     charts = [tucsonChart];
     
