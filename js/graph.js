@@ -39,10 +39,12 @@ function precipChart() {
     var epochYear = 2015;
     var tmin_cool = new Date(epochYear, 9, 1);
     var tmax_cool = new Date(epochYear+1, 5, 0);
-    var tmin_monsoon = new Date(epochYear+1, 6, 1);
+    var tmin_monsoon = new Date(epochYear+1, 5, 1);
     var tmax_monsoon = new Date(epochYear+1, 9, 0);
     var tmin_full = new Date(epochYear, 9, 1);
     var tmax_full = new Date(epochYear+1, 9, 0);
+    
+    var bisectDate = d3.bisector(function(d) { return d.date; }).left
     
     var accumulationOffsetDay = -1;
     
@@ -285,14 +287,8 @@ function precipChart() {
             yScale.domain(yExtent)
                   .range([height - margin.top - margin.bottom, 0]);
             
-            remainingLines.each(function(d) {
-                var startprecip = d.values[accumulationOffsetDay]
-                startprecip = (typeof(startprecip) === "undefined") ? 0 : startprecip.cumulativePrecip
-                d.values.forEach(function(d2, i) {
-                    d2.plotDate = getPlotDate(d2.date);
-                    d2.cumulativePrecipPlot = d2.cumulativePrecip - startprecip;
-                })
-            })
+            // calculate cumulative precip based on plot start date
+            remainingLines.each(rezeroAccumulation)
             
             // finally draw/redraw the lines using the new scale
             remainingLines.attr("d", function(d) {
@@ -416,6 +412,35 @@ function precipChart() {
             .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
             .on("click", function(d) { d.func() } )
         return gEnter;
+    }
+    
+    function rezeroAccumulation(d) {
+        var startprecip;
+        var date = new Date(xExtent[0]);
+        
+        var year
+        if (d.key == 'mean' || d.key == 'median') {
+            year = d.values[0].date.getYear()+1;
+        } else {
+            year = +d.key;
+        }
+        year = date.getMonth() > 8 ? year - 1 : year;
+        
+        date.setYear(year);
+        
+        // need to be careful since bisect will not return -1
+        if (+date == +d.values[0].date) {
+            startprecip = 0;
+        } else {
+            var index = bisectDate(d.values, date) - 1;
+            startprecip = d.values[index].cumulativePrecip;
+            console.log('bisected dates. d.key: ', d.key, 'search date: ', date, ' index: ', index, ' startprecip: ', startprecip);
+        }
+
+        d.values.forEach(function(d2, i) {
+            d2.plotDate = getPlotDate(d2.date);
+            d2.cumulativePrecipPlot = d2.cumulativePrecip - startprecip;
+        })
     }
     
     // function that enables year wrapping
@@ -675,10 +700,9 @@ function precipChart() {
         xval = Math.floor(xval);
         
         xval = new Date(xval)
-        xval.setHours(12)
+        xval.setHours(0)
         xval.setMinutes(0)
         xval.setSeconds(0);
-        //console.log(xval);
         
         var out = {}
         var year = xval.getFullYear();
@@ -687,6 +711,36 @@ function precipChart() {
         
         out.waterDay = Math.round((xval - waterYearStart) / 86400000);
         out.date = xval
+        
+        //console.log(out);
+        
+        return out;
+    }
+    
+    function invertxpnt2(xpnt, d) {
+        var xval = xScale.invert(xpnt);
+        
+        var date = new Date(xval)
+        //console.log(date);        
+        date.setHours(12)
+        date.setMinutes(0)
+        date.setSeconds(0);
+        
+        var year
+        if (d.key == 'mean' || d.key == 'median') {
+            year = d.values[0].date.getYear()+1;
+        } else {
+            year = +d.key;
+        }
+        year = date.getMonth() > 8 ? year - 1 : year;
+        
+        date.setYear(year);
+        
+        var index = bisectDate(d.values, date) -1;
+        
+        var out = {}
+        out.waterDay = index
+        out.date = date;
         
         //console.log(out);
         
@@ -708,15 +762,18 @@ function precipChart() {
         // I think that this can be removed since lineMousemove should also get called
         var point = d3.mouse(this);
         
-        var xdata = invertxpnt(point[0]);
+        var xdata = invertxpnt2(point[0], thisLineData);
         
-        var yval = thisLineData.values[xdata.waterDay-1].cumulativePrecipPlot;
+        var yval = thisLineData.values[xdata.waterDay].cumulativePrecipPlot;
         var yval = parseFloat(yval.toPrecision(3)) + " in";
+        
+        var dailyPrecip = thisLineData.values[xdata.waterDay].precip;
+        dailyPrecip = parseFloat(dailyPrecip.toPrecision(3)) + " in";
         
         var ensoval = getENSOvalue(thisLineData);
                 
         //var text = createTooltipText(thisLineData.key, String(yval), 'Day '+xdata.waterDay, 'MEI: '+ensoval, xdata.date);
-        var text = createTooltipText(thisLineData.key, xdata.date, xdata.waterDay, String(yval), ensoval);
+        var text = createTooltipText(thisLineData.key, xdata.date, xdata.waterDay, yval, dailyPrecip, ensoval);
         
         var tooltip = d3.select(this.parentNode.parentNode.parentNode.parentNode).select(".tooltip");
         tooltip.html(text)
@@ -728,14 +785,17 @@ function precipChart() {
         var thisLineData = thisLine.data()[0];
         var point = d3.mouse(this);
         
-        var xdata = invertxpnt(point[0]);
+        var xdata = invertxpnt2(point[0], thisLineData);
         
-        var yval = thisLineData.values[xdata.waterDay-1].cumulativePrecipPlot;
-        var yval = parseFloat(yval.toPrecision(4)) + " in";
+        var yval = thisLineData.values[xdata.waterDay].cumulativePrecipPlot;
+        yval = parseFloat(yval.toPrecision(3)) + " in";
+        
+        var dailyPrecip = thisLineData.values[xdata.waterDay].precip;
+        dailyPrecip = parseFloat(dailyPrecip.toPrecision(3)) + " in";
         
         var ensoval = getENSOvalue(thisLineData);
         
-        var text = createTooltipText(thisLineData.key, xdata.date, xdata.waterDay, String(yval), ensoval);
+        var text = createTooltipText(thisLineData.key, xdata.date, xdata.waterDay, yval, dailyPrecip, ensoval);
         
         var tooltip = d3.select(this.parentNode.parentNode.parentNode.parentNode).select(".tooltip");
 
@@ -796,13 +856,14 @@ function precipChart() {
 
 var tooltipDateFormatter = d3.time.format('%b %d');
 
-function createTooltipText(name, date, day, precip, enso) {
+function createTooltipText(name, date, day, precip, dailyPrecip, enso) {
     // [jd:] move this logic to a function to only have to manipulate once
     sRet = '';
     sRet += '<div class="tooltip-name">' + name + "</div>";
     sRet += '<div class="tooltip-date">' + tooltipDateFormatter(date) + '</div>';
-    sRet += '<div class="tooltip-date">' + 'Day ' + day + '</div>';
-    sRet += '<div class="tooltip-value">' + precip + '</div>';
+//     sRet += '<div class="tooltip-date">' + 'Day ' + day + '</div>';
+    sRet += '<div class="tooltip-value">' + '1 Day Precip: ' + dailyPrecip + '</div>';
+    sRet += '<div class="tooltip-value">' + 'Cumulative Precip: ' + precip + '</div>';
     sRet += '<div class="tooltip-value">' + 'MEI: ' + enso + '</div>';
     
     return sRet;

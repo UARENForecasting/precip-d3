@@ -84,13 +84,17 @@ function accumulate_precip(d) {
 }
 
 
+function cumulativePrecipAccessor (d) { return d.cumulativePrecip };
+function dailyPrecipAccessor (d) { return d.precip };
+
 // apply this function to data for each day
 // returns a new associative array
 function cumulativePrecipMean(dayOfDataByDay) {
-    accessor = function (d) { return d.cumulativePrecip };
+    
     
     out = {};
-    out.cumulativePrecip = d3.mean(dayOfDataByDay, accessor);
+    out.cumulativePrecip = d3.mean(dayOfDataByDay, cumulativePrecipAccessor);
+    out.precip = d3.median(dayOfDataByDay, dailyPrecipAccessor);
     out.waterDay = dayOfDataByDay[0].waterDay;
     out.date = dayOfDataByDay[0].date;
     
@@ -101,7 +105,8 @@ function cumulativePrecipMedian(dayOfDataByDay) {
     accessor = function (d) { return d.cumulativePrecip };
     
     out = {};
-    out.cumulativePrecip = d3.median(dayOfDataByDay, accessor);
+    out.cumulativePrecip = d3.median(dayOfDataByDay, cumulativePrecipAccessor);
+    out.precip = d3.median(dayOfDataByDay, dailyPrecipAccessor);
     out.waterDay = dayOfDataByDay[0].waterDay;
     out.date = dayOfDataByDay[0].date;
     
