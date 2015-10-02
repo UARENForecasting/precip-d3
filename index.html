@@ -49,36 +49,45 @@
 <div id="content">
     <div id="data"></div>
     
-        <div id="intro">
+    <div id="intro">
         <p>
-            This plot shows the cumulative precipitation at TIA for each year.
-            Years are colored by the JAN-FEB <a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI ENSO value</a>.
-            Hover your cursor over a line to get a tooltip with exact values.
-            Water year starts on October 1 of the previous year.
-            What will water year 2016 bring?
+            This plot shows the cumulative precipitation at Tucson International Airport for each year since 1951.
+            The data is colored by the strength of El Nino (blue) or La Nina (red) in that year, specifically the Jan-Feb <a href="http://www.esrl.noaa.gov/psd/enso/mei/index.html">Multivariate ENSO Index (MEI)</a>.
+            The Tucson water year starts on October 1 of the previous year.
+            The 2016 Jan-Feb MEI is nearly certain to be greater than 2.
+        </p>
+        <p>Tips:
+            <ul>
+            <li>Hover your cursor over a line or a year in the table to highlight that year of data.</li>
+            <li>Hover your cursor over a line to show a tooltip with data values on that date.</li>
+            <li>Click on the line or the year to keep it highlighted when you move your cursor away. This can make it easier to compare a handful of specific years.</li>
+            <li>Click the "Cool season," "Monsoon season," or "Full year" buttons to change date ranges. The MEI remains fixed to Jan-Feb of that water year regardless of the season selection. The season definitions are only based on the calendar, not the meteorological conditions of the year.</li>
+            </ul>
         </p>
         <p>
             If your plot looks bad or doesn't load then try the <a href="images/precip_static.png">static image</a>.
             We recommend using Chrome or Safari to view this page.
             The tooltip does not work properly on many versions of Firefox.
         </p>
-        <p>The plot is made with <a href="http://d3js.org">d3js</a>.</p>
+        
         <p>Precipitation data comes from the <a href="http://www.ncdc.noaa.gov">NCDC</a> daily summaries archive.</p>
-        <p>ENSO data comes from <a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">ESRL</a>.</p>
+        <p><a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI data</a> comes from <a href="http://www.esrl.noaa.gov">NOAA ESRL</a>.</p>
+        <p>The plot is made with <a href="http://d3js.org">d3js</a>.</p>
+        
         <p>
-            Here are some possible improvements.
             The source code for this site is on 
             <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a>
             so you can easily copy it and play with it.
             We welcome your contributions to make this a better tool.
+            Here are some possible improvements:
             <ul>
-            <li>Add water year 2016, maybe with a different weight. Might need a separate script to automate data collection.</li>
-            <li>Would be nice to be able to click on a year and make it stick.</li>
-            <li>Would be nice to select a year from a menu or a table and make it stick.</li>
-            <li>Add a table of years that highlights the appropriate time series when you roll over the text. Maybe this would also display the tooltip at the end of the year with total precip.</li>
-            <li>Need to distinguish between mean and median.</li>
+            <li>Add automated data collection for water year 2016.</li>
+            <li>Add sticky tooltip with total precip for selected years.</li>
+            <li>Distinguish between mean and median.</li>
+            <li>Add mean and median to table.</li>
             <li>Switch between locations, or use multiple graphs for different locations.</li>
-            <li>Add a control for the MEI month</li>
+            <li>Add a control for the MEI month.</li>
+            <li>Add support for arbitrary date ranges.</li>
             </ul>
         </p>
         <p>
@@ -86,11 +95,14 @@
             and Ben McMahan and Mike's CLIMAS <a href="http://www.climas.arizona.edu/blog/el-niño-here…what-exactly-does-mean-arizona-and-new-mexico">blog post</a>.
         </p>
         <p>
+            Some of the graphing source code used on this site was originally developed for <a href="https://sveri.uaren.org">sveri.uaren.org</a> with help from UA's <a href="https://cct.cals.arizona.edu">CALS-CCT</a> team and funding from the <a href="http://sveri.net">SVERI utilities</a>.
+        </p>
+        <p>
             <a href="http://wholmgren.github.io">Will Holmgren</a><br>
-            DOE EERE Postdoctoral Fellow<br>
-            Department of Atmospheric Sciences<br>
-            Renewable Energy Network<br>
-            University of Arizona<br>
+            <a href="http://energy.gov/eere/education/eere-postdoctoral-research-awards">DOE EERE Postdoctoral Fellow</a><br>
+            <a href="http://www.atmo.arizona.edu">Department of Atmospheric Sciences</a><br>
+            <a href="http://energy.arizona.edu">Renewable Energy Network</a><br>
+            <a href="http://www.arizona.edu">University of Arizona</a><br>
         </p>
     </div>
     
