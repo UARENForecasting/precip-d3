@@ -18,11 +18,8 @@ var ensoIndex;
 
 // chart defaults
 var dataDiv = "#data";
-var scaleHalf = 0.44;
-var scaleFull = 0.86;
-var halfFullThreshold = 960;
 
-var aspectRatio = 16.0/8.0;
+var aspectRatio = 16.0/7.0;
 
 
 // jquery document ready
@@ -171,7 +168,7 @@ function initializePlots() {
                     .attr("class", "chart tooltip");
 
     var containerWidth = d3.select(dataDiv).node().offsetWidth;
-    var size = (typeof size === "undefined") ? scaleFull : size;
+    var size = 1;
     var chartWidth = Math.round(containerWidth*size);
     var chartHeight = Math.round(chartWidth/aspectRatio);
     var margin = calculateMargin(chartWidth);
@@ -197,7 +194,7 @@ function initializePlots() {
 
 function calculateMargin(chartWidth) {
     return {top: 50, 
-            right: Math.round(chartWidth*0.05), 
+            right: Math.max(80, Math.round(chartWidth*0.15)), 
             bottom: 45, 
             left: Math.max(80, Math.round(chartWidth*0.15))}
 }
