@@ -62,6 +62,8 @@ table.year-selector {
     font-weight: 700;
 }
 
+g.gen_data.active.text { font-weight: 300 };
+
 .year-selector:hover {color: red; cursor: pointer;}
 
 .axis line,
@@ -78,17 +80,8 @@ table.year-selector {
 
 .line {
     fill: none;
-/*     set in chart.js */
-/*     stroke-width: 2px; */
-/*     stroke-opacity: 1; */
+/*     set stroke in chart.js since highlighting works better with attributes*/
 }
-
-/* 
-.line .hovered {
-    stroke-width: 3px;
-    stroke-opacity: 1;
-}
- */
 
 .title {
     font-size: 130%;

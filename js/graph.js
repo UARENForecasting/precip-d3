@@ -2,16 +2,18 @@
 function precipChart() {
     
     var dataDiv = "#data";
+    
+    // Set up default graph geometry
+    // can be changed with chart.width and chart.height
     var containerWidth = d3.select(dataDiv).node().offsetWidth; //document.body.offsetWidth - document.getElementById("leftnav").offsetWidth;
     containerWidth = 1000; //fix for now
-    var size = 0.8;
+    var size = 0.9;
     var containerWidth = Math.round(containerWidth*size);
     var aspectRatio = 16.0/8.0;
     
     var containingDivId = "#Tucson";
     var containingSelection;
     
-    // Set up graph variables/functions
     var margin = {top: 50, 
                   right: Math.round(containerWidth*0.05), 
                   bottom: 30, 
@@ -258,19 +260,7 @@ function precipChart() {
 //                 ymaxes.push(ymax);
 //                 //ymaxes.push(d.peak_power);
 //             });
-//             
-//             if (selectedDatesOnly) {
-//                 var format = d3.time.format("%Y-%m-%d");
-//                 tmin = format.parse(startDateVal);
-//                 tmax = format.parse(endDateVal);
-//             } else {
-//                 tmin = d3.min(tmins, function(d) { return d; });
-//                 tmax = d3.max(tmaxes, function(d) { return d; });
-//                 tmin = tmin ? d3.time.day.floor(tmin) : 0;
-//                 tmax = tmax ? d3.time.day.ceil(tmax) : 0;
-//             }
-           //tmin = 0; tmax = 210;
-//             xExtent = [tmin, tmax];
+
             console.log("xExtent: ", xExtent);
             
 //             ymin = d3.min(ymins, function(d) { return d; });
@@ -485,7 +475,7 @@ function precipChart() {
         if (d.key == 'mean' || d.key == 'median') {
             ensoval = 'N/A';
         } else {
-            ensoval = ensoIndex[d.key][0][ensoBin];
+            ensoval = parseFloat(ensoIndex[d.key][0][ensoBin]).toFixed(2);
         }
         return ensoval
     }
@@ -518,12 +508,14 @@ function precipChart() {
     chart.margin = function(_) {
         if (!arguments.length) return margin;
         margin = _;
+        innerWidth = width - margin.left - margin.right;
         return chart;
     };
 
     chart.width = function(_) {
         if (!arguments.length) return width;
         width = _;
+        innerWidth = width - margin.left - margin.right;
         return chart;
     };
 
@@ -667,6 +659,7 @@ function precipChart() {
     chart.redraw = function() {
         containingSelection = d3.select(containingDivId);
         containingSelection.call(chart, [], true);
+        d3.selectAll("text.end-of-year-data").each(updateEndOfYearText);
         return chart;
     };
     
@@ -725,31 +718,35 @@ function precipChart() {
         return chart;
     };
     
-    function invertxpnt(xpnt) {
+    function invertxpnt(xpnt, d) {
         var xval = xScale.invert(xpnt);
-        xval = Math.floor(xval);
         
-        xval = new Date(xval)
-        xval.setHours(0)
-        xval.setMinutes(0)
-        xval.setSeconds(0);
+        var date = chart.plotDateToRealDate(xval, d);
+        
+        var index = bisectDate(d.values, date) -1;
         
         var out = {}
-        var year = xval.getFullYear();
-        var waterYear = xval.getMonth() > 8 ? year + 1 : year;
-        var waterYearStart = new Date(waterYear-1, 9, 1);
-        
-        out.waterDay = Math.round((xval - waterYearStart) / 86400000);
-        out.date = xval
-        
+        out.waterDay = index
+        out.date = date;
         //console.log(out);
         
         return out;
     }
     
-    function invertxpnt2(xpnt, d) {
-        var xval = xScale.invert(xpnt);
+    function invertxDate(plotDate, d) {
+        var date = chart.plotDateToRealDate(plotDate, d);
         
+        var index = bisectDate(d.values, date) -1;
+        
+        var out = {}
+        out.waterDay = index
+        out.date = date;
+        //console.log(out);
+        
+        return out;
+    }
+    
+    chart.plotDateToRealDate = function (xval, d) {
         var date = new Date(xval)
         //console.log(date);        
         date.setHours(12)
@@ -766,15 +763,7 @@ function precipChart() {
         
         date.setYear(year);
         
-        var index = bisectDate(d.values, date) -1;
-        
-        var out = {}
-        out.waterDay = index
-        out.date = date;
-        
-        //console.log(out);
-        
-        return out;
+        return date;
     }
     
     // functions for making the tool tip work
@@ -792,13 +781,13 @@ function precipChart() {
         // I think that this can be removed since lineMousemove should also get called
         var point = d3.mouse(this);
         
-        var xdata = invertxpnt2(point[0], thisLineData);
+        var xdata = invertxpnt(point[0], thisLineData);
         
         var yval = thisLineData.values[xdata.waterDay].cumulativePrecipPlot;
-        var yval = parseFloat(yval.toPrecision(3)) + " in";
+        var yval = parseFloat(yval.toFixed(2)) + " in";
         
         var dailyPrecip = thisLineData.values[xdata.waterDay].precip;
-        dailyPrecip = parseFloat(dailyPrecip.toPrecision(3)) + " in";
+        dailyPrecip = parseFloat(dailyPrecip.toFixed(2)) + " in";
         
         var ensoval = getENSOvalue(thisLineData);
                 
@@ -815,13 +804,13 @@ function precipChart() {
         var thisLineData = thisLine.data()[0];
         var point = d3.mouse(this);
         
-        var xdata = invertxpnt2(point[0], thisLineData);
+        var xdata = invertxpnt(point[0], thisLineData);
         
         var yval = thisLineData.values[xdata.waterDay].cumulativePrecipPlot;
-        yval = parseFloat(yval.toPrecision(3)) + " in";
+        yval = parseFloat(yval.toFixed(2)) + " in";
         
         var dailyPrecip = thisLineData.values[xdata.waterDay].precip;
-        dailyPrecip = parseFloat(dailyPrecip.toPrecision(3)) + " in";
+        dailyPrecip = parseFloat(dailyPrecip.toFixed(2)) + " in";
         
         var ensoval = getENSOvalue(thisLineData);
         
@@ -829,18 +818,18 @@ function precipChart() {
         
         var tooltip = d3.select(this.parentNode.parentNode.parentNode.parentNode).select(".tooltip");
 
-        var tooptipOffset = 5; // [jd:] was an offset of 10px - trying to improve offset
+        var tooptipOffset = 5; 
         tooltip.style("top", (event.clientY + tooptipOffset)+"px")
                .style("left", (event.clientX + tooptipOffset)+"px")
                .html(text);    
     };
     
     chart.lineMouseout = function (d, i) {
-        setCursor("default");// [jd:] trying an improved UI
+        setCursor("default");
         var tooltip = d3.select(this.parentNode.parentNode.parentNode.parentNode).select(".tooltip");
         var thisSelection = d3.select(this)
         
-        var active = thisSelection.classed("active");
+        var active = d3.select(this.parentNode).classed("active");
         if (!active) {
             thisSelection.style("stroke-width", get_strokeWidthNormal);
             thisSelection.style("stroke-opacity", get_strokeOpacityNormal);
@@ -850,7 +839,7 @@ function precipChart() {
     };
     
     chart.lineClick = function(d, i) {
-        var thisSelection = d3.select(this)
+        var thisSelection = d3.select(this.parentNode) // select the g instead of the path
         var active = thisSelection.classed("active");
         thisSelection.classed("active", !active);
         
@@ -860,7 +849,12 @@ function precipChart() {
                         .filter(function(d) { return d.key == data.key })
                         
         yearText.classed("active", !active);
-
+        
+        if (!active) {
+            addEndOfYearText(data, thisSelection);
+        } else {
+            thisSelection.select("text.end-of-year-data").remove()
+        }
     }
     
     chart.tableYearClick = function (d, i) {
@@ -870,11 +864,10 @@ function precipChart() {
         
         var data = thisSelection.data()[0];
 
-        var yearLine = d3.select(containingDivId).selectAll("g.gen_data path")
+        var yearLineg = d3.select(containingDivId).selectAll("g.gen_data")
                         .filter(function(d) { return d.key == data.key })
                         
-        yearLine.classed("active", !active);
-
+        yearLineg.classed("active", !active);
     }
     
     chart.tableYearMouseover = function (d, i) {
@@ -884,13 +877,17 @@ function precipChart() {
         
         //console.log(data);
         
-        var yearLine = d3.select(containingDivId).selectAll("g.gen_data path")
+        var yearLineg = d3.select(containingDivId).selectAll("g.gen_data")
                             .filter(function(d) { return d.key == data.key })
+        
+        var yearLine = yearLineg.select("path");
         
         //console.log("tableYearMouseover yearLine: ", yearLine);
         
         yearLine.style("stroke-width", strokeWidthHighlighted);
         yearLine.style("stroke-opacity", strokeOpacityHighlighted);
+        
+        addEndOfYearText(data, yearLineg);
     }
     
     chart.tableyearMouseout = function (d, i) {
@@ -901,23 +898,66 @@ function precipChart() {
         var data = thisSelection.data()[0];
         
         if (!active) {
-            var yearLine = d3.select(containingDivId).selectAll("g.gen_data path")
+            var yearLineg = d3.select(containingDivId).selectAll("g.gen_data")
                                 .filter(function(d) { return d.key == data.key })
-                            
+            
+            var yearLine = yearLineg.select("path");      
             //console.log("tableyearMouseexit yearLine: ", yearLine);
         
             yearLine.style("stroke-width", get_strokeWidthNormal);
             yearLine.style("stroke-opacity", get_strokeWidthNormal);
             yearLine.classed("active", false);
+            
+            // could use an exit selection, but this works
+            yearLineg.select("text.end-of-year-data").remove()
         } else {
             //console.log("tableyearMouseexit. active was true for ", data.key);
         }
     }
     
+    function addEndOfYearText(data, yearLineg) {
+        var xdata = invertxDate(xExtent[1], data);
+        //console.log(xdata);
+        
+        var yval = data.values[xdata.waterDay].cumulativePrecipPlot;
+        yvalText = parseFloat(yval.toFixed(2)) + " in";
+        var ensoval = "MEI " + getENSOvalue(data);
+        
+        var text = data.key + ". " + yvalText + ", " + ensoval;
+        //console.log(text);
+        
+        // only append if does not exist
+        yearLineg.selectAll("text.end-of-year-data").data([1]).enter()
+                 .append("text")
+                 .attr({x: xScale(xExtent[1])+2, y:yScale(yval)+5})
+                 .attr("class", "end-of-year-data")
+                 .text(text);
+    }
+    
+    function updateEndOfYearText(textSelection) {
+        var yearLineg = d3.select(this.parentNode);
+        
+        var data = yearLineg.data()[0]
+        
+        var xdata = invertxDate(xExtent[1], data);
+        //console.log(xdata);
+        
+        var yval = data.values[xdata.waterDay].cumulativePrecipPlot;
+        yvalText = parseFloat(yval.toFixed(2)) + " in";
+        var ensoval = "MEI " + getENSOvalue(data);
+        
+        var text = data.key + ". " + yvalText + ", " + ensoval;
+        //console.log(text);
+        
+        yearLineg.select("text.end-of-year-data")
+                 .attr({x: xScale(xExtent[1])+2, y:yScale(yval)+5})
+                 .text(text);
+    }
+    
     chart.buttonMouseover = function(d,i) {
         var thisSelection = d3.select(this);
         var labelText = labelMapping[thisSelection.attr("class")];
-//         console.log("buttonMouseover: ", labelText);
+        //console.log("buttonMouseover: ", labelText);
         
         var tooltip = d3.select(containingDivId).select(".tooltip");
         var tooptipOffset = 5;
@@ -936,7 +976,7 @@ function precipChart() {
     chart.buttonMouseout = function(d,i) {
         var thisSelection = d3.select(this);
         var labelText = labelMapping[thisSelection.attr("class")];
-//         console.log("buttonMouseout: ", labelText);
+        //console.log("buttonMouseout: ", labelText);
         
         var tooltip = d3.select(containingDivId).select(".tooltip");
         tooltip.style("visibility", "hidden");
