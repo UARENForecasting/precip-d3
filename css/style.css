@@ -62,6 +62,8 @@ table.year-selector {
     font-weight: 700;
 }
 
+table.year-selector:hover { cursor: pointer; }
+
 g.gen_data.active.text { font-weight: 300 };
 
 .year-selector:hover {color: red; cursor: pointer;}
