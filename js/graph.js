@@ -819,8 +819,8 @@ function precipChart() {
         var tooltip = d3.select(this.parentNode.parentNode.parentNode.parentNode).select(".tooltip");
 
         var tooptipOffset = 5; 
-        tooltip.style("top", (event.clientY + tooptipOffset)+"px")
-               .style("left", (event.clientX + tooptipOffset)+"px")
+        tooltip.style("top", (d3.event.clientY + tooptipOffset)+"px")
+               .style("left", (d3.event.clientX + tooptipOffset)+"px")
                .html(text);    
     };
     
@@ -962,8 +962,8 @@ function precipChart() {
         var tooltip = d3.select(containingDivId).select(".tooltip");
         var tooptipOffset = 5;
         tooltip.style("visibility", "visible")
-               .style("top", (event.clientY + tooptipOffset)+"px")
-               .style("left", (event.clientX + tooptipOffset)+"px")
+               .style("top", (d3.event.clientY + tooptipOffset)+"px")
+               .style("left", (d3.event.clientX + tooptipOffset)+"px")
                .html(labelText);
                
         if (thisSelection.attr("class") === "download clickline") {
