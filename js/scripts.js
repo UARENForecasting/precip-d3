@@ -36,6 +36,8 @@ $(function() {
     // signature: d3.csv(url, accessor, callback)
     //d3.csv(dataURL, precip_parser, precip_callback);
     
+    // mei_callback has the call to precip_callback
+    // need to do it in order so the mei data is available first
     d3.csv(ensoURL, mei_parser, mei_callback);
 });
 
@@ -44,6 +46,7 @@ $(function() {
 
 // a function to parse the date strings in the csv file
 var dateparser = d3.time.format("%Y%m%d")
+var dateparser_acis = d3.time.format("%Y-%m-%d")
 
 
 // a function to parse the csv file
@@ -66,6 +69,39 @@ function precip_parser(d) {
     if (d.waterYear > 1950) {
         return d;
     }
+}
+
+var acis_data
+
+function precip_parser_acis(text) {
+    //console.log('precip_parser_acis');
+    //console.log(text);
+    var data = text.data.map(function(row) {
+        //console.log(row);
+        
+        var d = {date: dateparser_acis.parse(row[0]),
+                 precip: +row[1]};
+        
+        // acis returns "T" for trace, which is turned into NaN by +.
+        // this turns NaNs into 0s.
+        d.precip = isNaN(d.precip) ? 0 : d.precip;
+        
+        // calculate waterYear and waterDay attributes
+        var year = d.date.getFullYear();
+        d.waterYear = d.date.getMonth() > 8 ? year + 1 : year;
+        var waterYearStart = new Date(d.waterYear-1, 9, 1);
+        d.waterDay = Math.round((d.date - waterYearStart) / 86400000);
+        
+        return d;
+    });
+    
+    console.log(data);
+    
+    accumulate_precip(data);
+    
+    acis_data = data;
+    
+    precip_callback_acis(data);
 }
 
 
@@ -132,7 +168,49 @@ function precip_callback(error, rows) {
     // add the data to the plot
     d3.selectAll("#Tucson").call(tucsonChart, dataNested, true)
     d3.selectAll("#Tucson").call(tucsonChart, dataStatsByDay, true)
+    
+    get_acis_data()
 };
+
+
+function precip_callback_acis(rows) {
+    console.log('retrieved precip data: ', rows);
+    dataParsed = rows;
+    dataNested = d3.nest().key(function(d) { return d.waterYear; })
+                          .entries(dataParsed);
+    dataNested.forEach(function (d) { accumulate_precip(d.values) });
+    
+    // add the data to the plot
+    d3.selectAll("#Tucson").call(tucsonChart, dataNested, true)
+}
+
+
+function get_acis_data() {
+    var sid = "GHCND:USW00023160";
+
+    var url = "http://data.rcc-acis.org/StnData";
+    
+    var params = {
+            sid: "USW00023160",
+            sdate: "2015-10-01",
+            edate: dateparser_acis(new Date()),
+            elems: [{"name":"pcpn","interval":"dly"}],
+            output: "json"
+        };
+
+    var params_string = JSON.stringify(params);
+    var args = {params: params_string};
+    
+    console.log("getting data for: ", params_string);
+
+    $.ajax(url, {
+        type: 'POST',
+        data: args,
+        crossDomain: true,
+        success: precip_parser_acis,
+        error: function(error) {console.log(error)}
+    });
+}
 
 
 function mei_parser(d) {
@@ -150,6 +228,7 @@ function mei_callback(error, rows) {
     ensoIndex = d3.nest().key(function(d) { return d.YEAR; }).map(rows);
     
     d3.csv(dataURL, precip_parser, precip_callback);
+    //d3.csv(acisURL, precip_parser_acis, precip_callback_acis);
 }
 
 // a function to construct the graph elements.

@@ -334,11 +334,12 @@ function precipChart() {
             console.log("nestedYears: ", nestedYears);
             
             var tr = containingSelection.select("table").selectAll("tr")
-                                            .data(nestedYears)
+                                            .data(nestedYears, function(d) { return d.key })
                                             .enter()
                                             .append("tr");
             
-            var td = tr.selectAll("td").data(function (d) { return d.values })
+            var tr = containingSelection.select("table").selectAll("tr")
+            var td = tr.selectAll("td").data(function (d) { return d.values }, function (d2) { return d2.key } )
                                         .enter()
                                         .append("td")
                                         .html(function(d) {return d.key})
@@ -474,6 +475,8 @@ function precipChart() {
         
         if (d.key == 'mean' || d.key == 'median') {
             ensoval = 'N/A';
+        } else if (d.key == '2016') {
+            ensoval = 2.4;
         } else {
             ensoval = parseFloat(ensoIndex[d.key][0][ensoBin]).toFixed(2);
         }
