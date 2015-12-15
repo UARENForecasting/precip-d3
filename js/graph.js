@@ -484,8 +484,10 @@ function precipChart() {
     }
     
     function getENSOcolor(d) {
-        if (d.key == 'mean' || d.key == 'median') {
+        if (d.key == 'mean') {
             return 'black';
+        } else if (d.key == 'median') {
+            return 'green';
         } else {
             return colorScale(getENSOvalue(d));
         }
