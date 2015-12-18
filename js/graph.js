@@ -430,7 +430,7 @@ function precipChart() {
                 })
             .text(function(d){return d.season})
             .attr("class", "season-control")
-            .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
+            .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "white" : "black"} )
             .on("click", function(d) { d.func() } )
         return gEnter;
     }
@@ -604,7 +604,7 @@ function precipChart() {
             .attr("fill", "black")
         seasonsControls
             .filter(function(d) { return d.season.toLowerCase().indexOf("cool") == -1 })
-            .attr("fill", "gray")
+            .attr("fill", "white")
             
         return chart.redraw();
     }
@@ -621,7 +621,7 @@ function precipChart() {
             .attr("fill", "black")
         seasonsControls
             .filter(function(d) { return d.season.toLowerCase().indexOf("monsoon") == -1 })
-            .attr("fill", "gray")
+            .attr("fill", "white")
             
         return chart.redraw();
     }
@@ -638,7 +638,7 @@ function precipChart() {
             .attr("fill", "black")
         seasonsControls
             .filter(function(d) { return d.season.toLowerCase().indexOf("full") == -1 })
-            .attr("fill", "gray")
+            .attr("fill", "white")
             
         return chart.redraw();
     }
