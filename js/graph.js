@@ -107,7 +107,7 @@ function precipChart() {
     
     // construct the color scale (the code, not the legend)
     //var colors =['#2D8098', '#2A6778', '#274E5A', '#24363A', '#212121', '#4D2426', '#7F262E', '#B22833', '#E42A38'].reverse()
-    var colors = colorbrewer.RdYlBu[10]
+    var colors = colorbrewer.RdYlGn[10]
 //     var colorDomain = [-2.5,2.5];
     var colorDomain = [-2.25,2.25];
 //     var colorDomain = [-2,2];
@@ -430,7 +430,7 @@ function precipChart() {
                 })
             .text(function(d){return d.season})
             .attr("class", "season-control")
-            .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
+            .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "white" : "black"} )
             .on("click", function(d) { d.func() } )
         return gEnter;
     }
@@ -484,8 +484,10 @@ function precipChart() {
     }
     
     function getENSOcolor(d) {
-        if (d.key == 'mean' || d.key == 'median') {
+        if (d.key == 'mean') {
             return 'black';
+        } else if (d.key == 'median') {
+            return 'white';
         } else {
             return colorScale(getENSOvalue(d));
         }
@@ -602,7 +604,7 @@ function precipChart() {
             .attr("fill", "black")
         seasonsControls
             .filter(function(d) { return d.season.toLowerCase().indexOf("cool") == -1 })
-            .attr("fill", "gray")
+            .attr("fill", "white")
             
         return chart.redraw();
     }
@@ -619,7 +621,7 @@ function precipChart() {
             .attr("fill", "black")
         seasonsControls
             .filter(function(d) { return d.season.toLowerCase().indexOf("monsoon") == -1 })
-            .attr("fill", "gray")
+            .attr("fill", "white")
             
         return chart.redraw();
     }
@@ -636,7 +638,7 @@ function precipChart() {
             .attr("fill", "black")
         seasonsControls
             .filter(function(d) { return d.season.toLowerCase().indexOf("full") == -1 })
-            .attr("fill", "gray")
+            .attr("fill", "white")
             
         return chart.redraw();
     }

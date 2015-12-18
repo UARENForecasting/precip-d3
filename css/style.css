@@ -32,7 +32,6 @@ a:visited { color: rgb(49, 54, 149) }  /* visited links   */
 .season-control:hover {color: red; cursor: pointer;}
 
 #data {
-    padding-top: 20px;
 }
 
 #intro {
@@ -44,6 +43,8 @@ a:visited { color: rgb(49, 54, 149) }  /* visited links   */
 .chart {
     float:left;
     max-width: 100%;
+    background-color: #666;
+    padding-top: 20px;
 }
 
 .active {
