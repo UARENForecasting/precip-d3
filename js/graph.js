@@ -107,7 +107,7 @@ function precipChart() {
     
     // construct the color scale (the code, not the legend)
     //var colors =['#2D8098', '#2A6778', '#274E5A', '#24363A', '#212121', '#4D2426', '#7F262E', '#B22833', '#E42A38'].reverse()
-    var colors = colorbrewer.RdYlBu[10]
+    var colors = colorbrewer.RdYlGn[10]
 //     var colorDomain = [-2.5,2.5];
     var colorDomain = [-2.25,2.25];
 //     var colorDomain = [-2,2];
@@ -487,7 +487,7 @@ function precipChart() {
         if (d.key == 'mean') {
             return 'black';
         } else if (d.key == 'median') {
-            return 'green';
+            return 'white';
         } else {
             return colorScale(getENSOvalue(d));
         }
