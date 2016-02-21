@@ -446,7 +446,7 @@ function precipChart() {
 
         var year
         if (d.key == 'mean' || d.key == 'median') {
-            year = d.values[0].date.getYear() + 1;
+            year = d.values[0].date.getFullYear() + 1;
         } else {
             year = +d.key;
         }
@@ -485,7 +485,7 @@ function precipChart() {
 
         var year;
         if (d.key == 'mean' || d.key == 'median') {
-            year = d.values[0].date.getYear() + 1;
+            year = d.values[0].date.getFullYear() + 1;
         } else {
             year = +d.key;
         }
@@ -805,7 +805,7 @@ function precipChart() {
 
         var date = chart.plotDateToRealDate(xval, d);
 
-        var index = bisectDate(d.values, date) -1;
+        var index = bisectDate(d.values, date) - 1;
 
         var out = {}
         out.waterDay = index
@@ -837,7 +837,7 @@ function precipChart() {
 
         var year
         if (d.key == 'mean' || d.key == 'median') {
-            year = d.values[0].date.getYear()+1;
+            year = d.values[0].date.getFullYear() + 1;
         } else {
             year = +d.key;
         }
