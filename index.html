@@ -4,20 +4,20 @@
 
 <head>
     <meta charset="utf-8">
-    
+
     <title>UA Water Year</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" type="text/css" href="css/ua-web-branding.css"/>
-    
+
     <link rel="stylesheet" type="text/css" href="css/style.css" media="screen">
-    
+
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" ></script>
 <!--     <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script> -->
     <script src="js/ua-web-branding.js" type="text/javascript"></script>
-    
+
      <!--[if lte IE 8]>
         <script type="text/javascript">var is_ie8_or_older = true;</script>
     <![endif]-->
@@ -25,15 +25,15 @@
         <script src="js/d3.min.js"></script>
         <script src="js/graph.js"></script>
     <!--<![endif]-->
-    
+
     <script type="text/javascript">
         var is_ie8_or_older = (typeof is_ie8_or_older === "undefined") ? false : true;
         console.log('is_ie8_or_older = ', is_ie8_or_older);
     </script>
-    
+
     <script src="colorbrewer/colorbrewer.js"></script>
-    <script src="js/scripts.js"></script>    
-    
+    <script src="js/scripts.js"></script>
+
 </head>
 
 <body>
@@ -48,7 +48,7 @@
 
 <div id="content">
     <div id="data"></div>
-    
+
     <div id="intro">
         <p>
             This plot shows the cumulative precipitation at Tucson International Airport for each year since 1951.
@@ -70,14 +70,14 @@
             We recommend using Chrome or Safari to view this page.
             The tooltip does not work properly on many versions of Firefox.
         </p>
-        
+
         <p>Precipitation data through 2015-09-30 comes from the <a href="http://www.ncdc.noaa.gov">NCDC</a> daily summaries archive.</p>
         <p>Precipitation data from 2015-10-01 to present comes from <a href="http://www.rcc-acis.org/docs_webservices.html">RCC-ACIS</a>.</p>
         <p><a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI data</a> comes from <a href="http://www.esrl.noaa.gov">NOAA ESRL</a>.</p>
         <p>The plot is made with <a href="http://d3js.org">d3js</a>.</p>
-        
+
         <p>
-            The source code for this site is on 
+            The source code for this site is on
             <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a>
             so you can easily copy it and play with it.
             We welcome your contributions to make this a better tool.
@@ -105,7 +105,7 @@
             <a href="http://www.arizona.edu">University of Arizona</a><br>
         </p>
     </div>
-    
+
 </div>
 
 <script>
