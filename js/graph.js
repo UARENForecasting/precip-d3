@@ -238,6 +238,9 @@ function precipChart() {
             var remainingLines = g.selectAll("g.gen_data").select("path");
             console.log("remainingLines: ", remainingLines);
             
+            // calculate cumulative precip based on plot start date
+            remainingLines.each(rezeroAccumulation)
+            
             // set up x and y axes
             // arrays to dump mins and maxes in
             var tmins = [];
@@ -281,8 +284,7 @@ function precipChart() {
             yScale.domain(yExtent)
                   .range([height - margin.top - margin.bottom, 0]);
             
-            // calculate cumulative precip based on plot start date
-            remainingLines.each(rezeroAccumulation)
+            
             
             // finally draw/redraw the lines using the new scale
             remainingLines.attr("d", function(d) {
@@ -438,31 +440,69 @@ function precipChart() {
     
     function rezeroAccumulation(d) {
         var startprecip;
-        var date = new Date(xExtent[0]);
+        var endprecip
+        var startDate = new Date(xExtent[0]);
+        var endDate = new Date(xExtent[1]);
         
         var year
         if (d.key == 'mean' || d.key == 'median') {
-            year = d.values[0].date.getYear()+1;
+            year = d.values[0].date.getYear() + 1;
+        } else {
+            year = +d.key;
+        }
+        
+        startYear = startDate.getMonth() > 8 ? year - 1 : year;
+        endYear = endDate.getMonth () > 8 ? year - 1 : year;
+        
+        startDate.setYear(startYear); // does not work with setFullYear for some reason
+        endDate.setYear(endYear);
+        console.log(startDate, endDate);
+        
+        // need to be careful since bisect will not return -1
+        if (+startDate == +d.values[0].date) {
+            startprecip = 0;
+        } else {
+            var index = bisectDate(d.values, startDate) - 1;
+            startprecip = d.values[index].cumulativePrecip;
+            console.log('bisected dates. d.key: ', d.key, 'search date: ', startDate, ' index: ', index, ' startprecip: ', startprecip);
+        }
+
+        var index = bisectDate(d.values, endDate) - 1;
+        endprecip = d.values[index].cumulativePrecip;
+        console.log('bisected dates. d.key: ', d.key, 'search date: ', startDate, ' index: ', index, ' endprecip: ', endprecip);
+            
+        d.values.forEach(function(d2, i) {
+            d2.plotDate = getPlotDate(d2.date);
+            d2.cumulativePrecipPlot = d2.cumulativePrecip - startprecip;
+        })
+        
+        d.cumulativePrecipPlotMax = endprecip - startprecip;
+    }
+    
+    function getMaxVisible(d) {
+        var endprecip;
+        var date = new Date(xExtent[1]);
+        
+        var year;
+        if (d.key == 'mean' || d.key == 'median') {
+            year = d.values[0].date.getYear() + 1;
         } else {
             year = +d.key;
         }
         year = date.getMonth() > 8 ? year - 1 : year;
         
-        date.setYear(year);
+        date.setYear(year); // does not work with setFullYear for some reason
+        //console.log(date);
         
         // need to be careful since bisect will not return -1
         if (+date == +d.values[0].date) {
             startprecip = 0;
         } else {
             var index = bisectDate(d.values, date) - 1;
-            startprecip = d.values[index].cumulativePrecip;
+            endprecip = d.values[index].cumulativePrecip;
             console.log('bisected dates. d.key: ', d.key, 'search date: ', date, ' index: ', index, ' startprecip: ', startprecip);
         }
-
-        d.values.forEach(function(d2, i) {
-            d2.plotDate = getPlotDate(d2.date);
-            d2.cumulativePrecipPlot = d2.cumulativePrecip - startprecip;
-        })
+        
     }
     
     // function that enables year wrapping
@@ -642,6 +682,26 @@ function precipChart() {
         return chart.redraw();
     }
     
+    chart.arbitraryDates = function(startMonth, endMonth) {
+        accumulationOffsetDay = -1;
+        
+        //year = startDate.getMonth() > 8 ? year : year;
+        //year = endDate.getMonth() > 8 ? year - 1 : year;
+        
+        endMonth = endMonth > 8 ? endMonth : endMonth + 12;
+        
+        tmin = new Date(epochYear, startMonth)
+        tmax = new Date(epochYear, endMonth)
+        
+        xExtent = [tmin, tmax];
+        yExtent = [ymin_full, ymax_full];
+        
+        seasonsControls = d3.selectAll(".season-control")
+                             .attr("fill", "gray")
+            
+        return chart.redraw();
+    }
+    
     chart.accumulationOffsetDay = function(_) {
         if (!arguments.length) return accumulationOffsetDay;
         accumulationOffsetDay = _;
@@ -765,7 +825,7 @@ function precipChart() {
         }
         year = date.getMonth() > 8 ? year - 1 : year;
         
-        date.setYear(year);
+        date.setFullYear(year);
         
         return date;
     }
