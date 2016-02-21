@@ -517,7 +517,7 @@ function precipChart() {
         if (d.key == 'mean' || d.key == 'median') {
             ensoval = 'N/A';
         } else if (d.key == '2016') {
-            ensoval = 2.123.toFixed(2);
+            ensoval = 2.202.toFixed(2);
         } else {
             ensoval = parseFloat(ensoIndex[d.key][0][ensoBin]).toFixed(2);
         }
