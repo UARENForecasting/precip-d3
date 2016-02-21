@@ -682,19 +682,37 @@ function precipChart() {
         return chart.redraw();
     }
 
-    chart.arbitraryDates = function(startMonth, endMonth) {
+    chart.arbitraryDates = function(startMonth, endMonth, ymin, ymax) {
         accumulationOffsetDay = -1;
 
         //year = startDate.getMonth() > 8 ? year : year;
         //year = endDate.getMonth() > 8 ? year - 1 : year;
 
+        // Convert standard calendar indexing to Javascript indexing
+        startMonth = startMonth - 1;
+
+        // No conversion for endMonth since it is inclusive
+        endMonth = endMonth;
+
         endMonth = endMonth > 8 ? endMonth : endMonth + 12;
 
-        tmin = new Date(epochYear, startMonth)
-        tmax = new Date(epochYear, endMonth)
+        if (startMonth > 8) {
+            year = epochYear
+        } else {
+            year = epochYear + 1
+            endMonth = endMonth - 12; // undo what we did above
+        }
+
+        console.log('startMonth: ', startMonth, ' endMonth: ', endMonth, ' year: ', year)
+
+        tmin = new Date(year, startMonth)
+        tmax = new Date(year, endMonth, 0)
 
         xExtent = [tmin, tmax];
-        yExtent = [ymin_full, ymax_full];
+
+        ymin = (typeof(ymin) === 'undefined') ? ymin_full : ymin
+        ymax = (typeof(ymax) === 'undefined') ? ymax_full : ymax
+        yExtent = [ymin, ymax];
 
         seasonsControls = d3.selectAll(".season-control")
                              .attr("fill", "gray")
