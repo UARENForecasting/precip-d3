@@ -57,7 +57,7 @@
             The 2016 Jan-Feb MEI is nearly certain to be greater than 2.
             The 2016 data is colored by the most recent MEI value available.
         </p>
-        <p>Tips:
+        <h2>Tips</h2>
             <ul>
             <li>Hover your cursor over a line or a year in the table to highlight that year of data.</li>
             <li>Hover your cursor over a line to show a tooltip with data values on that date.</li>
@@ -71,23 +71,37 @@
             The tooltip does not work properly on many versions of Firefox.
         </p>
 
+        <h2>Data</h2>
         <p>Precipitation data through 2015-09-30 comes from the <a href="http://www.ncdc.noaa.gov">NCDC</a> daily summaries archive.</p>
         <p>Precipitation data from 2015-10-01 to present comes from <a href="http://www.rcc-acis.org/docs_webservices.html">RCC-ACIS</a>.</p>
         <p><a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI data</a> comes from <a href="http://www.esrl.noaa.gov">NOAA ESRL</a>.</p>
-        <p>The plot is made with <a href="http://d3js.org">d3js</a>.</p>
 
+        <h2>Advanced usage</h2>
         <p>
-            The source code for this site is on
-            <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a>
-            so you can easily copy it and play with it.
-            We welcome your contributions to make this a better tool.
+           It is possible to manually control the start, end, minimum, and maximum values of the plot. To do so, you'll need to open up your browser's debugger and use the following function in your javascript console:
+        </p>
+        <p class="code">
+        tucsonChart.arbitraryDates(startMonth, endMonth, ymin, ymax)
+        </p>
+        <p>
+        Enter the months as integers (January = 1). The endMonth is inclusive, so enter 2 to plot all of February. The ymin and ymax parameters may be omitted. For example, to show data for only January 1 through February 28/29, and to set the y axis to 0 inches to 5 inches, use the command:
+        </p>
+        <p class="code">
+        tucsonChart.arbitraryDates(1,2,0,5)
+        </p>
+        <p>
+        This is a new and relatively untested feature, so you might run into problems. In the future, I hope to add controls to the page for this feature, which brings us to...
+        </p>
+        <h2>Open source</h2>
+        <p>
+            The source code for this site is on <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a> and released under the MIT license. This means that you can easily copy the code, play with it, contribute your improvements to this page, or use the code as the starting point or inspiration for your own tool.
             Here are some possible improvements:
             <ul>
             <li>Add sticky tooltip with total precip for selected years.</li>
             <li>Distinguish between mean and median.</li>
-            <li>Switch between locations, or use multiple graphs for different locations.</li>
+            <li>Add more locations.</li>
             <li>Add a control for the MEI month.</li>
-            <li>Add support for arbitrary date ranges.</li>
+            <li>Implement better support for arbitrary date ranges.</li>
             </ul>
         </p>
         <p>
@@ -97,6 +111,7 @@
         <p>
             Some of the graphing source code used on this site was originally developed for <a href="https://sveri.uaren.org">sveri.uaren.org</a> with help from UA's <a href="https://cct.cals.arizona.edu">CALS-CCT</a> team and funding from the <a href="http://sveri.net">SVERI utilities</a>.
         </p>
+        <p>The plot is made with <a href="http://d3js.org">d3js</a>.</p>
         <p>
             <a href="http://wholmgren.github.io">Will Holmgren</a><br>
             <a href="http://energy.gov/eere/education/eere-postdoctoral-research-awards">DOE EERE Postdoctoral Fellow</a><br>
