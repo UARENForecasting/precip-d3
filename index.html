@@ -62,13 +62,13 @@
             <li>Hover your cursor over a line or a year in the table to highlight that year of data.</li>
             <li>Hover your cursor over a line to show a tooltip with data values on that date.</li>
             <li>Click on the line or the year to keep it highlighted when you move your cursor away. This can make it easier to compare a handful of specific years.</li>
-            <li>Click the "Cool season," "Monsoon season," or "Full year" buttons to change date ranges. The MEI remains fixed to Jan-Feb of that water year regardless of the season selection. The season definitions are only based on the calendar, not the meteorological conditions of the year.</li>
+            <li>Click the "Cool season," "Monsoon season," or "Full year" buttons to change date ranges. The MEI remains fixed to Jan-Feb of that water year regardless of the season selection. The season definitions are only based on the calendar, not the meteorological conditions of the specific years.</li>
             </ul>
         </p>
         <p>
             If your plot looks bad or doesn't load then try the <a href="images/precip_static.png">static image</a>.
-            We recommend using Chrome or Safari to view this page.
-            The tooltip does not work properly on many versions of Firefox.
+            We recommend using Chrome, Safari, or Firefox to view this page.
+            Mobile devices are not supported.
         </p>
 
         <h2>Data</h2>
@@ -77,28 +77,58 @@
 
         <h2>Advanced usage</h2>
         <p>
-           It is possible to manually control the start, end, minimum, and maximum values of the plot. To do so, you'll need to open up your browser's debugger and use the following function in your javascript console:
+        It is possible to manually control the start, end, minimum, and maximum values of the plot, as well as the MEI month index. To do so, you'll need to open up your browser's debugger and use the following functions in your javascript console.
+        </p>
+        <p>
+        To change the dates, use the command:
         </p>
         <p class="code">
-        chart.arbitraryDates(startMonth, endMonth, ymin, ymax)
+        chart.months([startMonth, endMonth]).redraw()
         </p>
         <p>
-        Enter the months as integers (January = 1). The endMonth is inclusive, so enter 3 to plot all of March. The ymin and ymax parameters may be omitted. For example, to show data for only January 1 through March 31, and to set the y axis to 0 inches to 6 inches, use the command:
+        Enter the months as integers (January = 1). The endMonth is inclusive. For example, to show data for only January 1 through March 31, use the command:
         </p>
         <p class="code">
-        chart.autoscale(false).arbitraryDates(1,3,0,6)
+        chart.months([1,3]).redraw()
         </p>
         <p>
-        The y range settings will be ignored unless autoscale was previously set to false, which explains the need for the first autoscale call. The chart then remembers its autoscale setting. Autoscaling may be turned on again using <span class="code">chart.autoscale(true)</span>.
+        Unfortunately, you cannot currently plot data that spans a new water year, so ranges such as [9,10] do not work.
         </p>
         <p>
-        Arbitrary stations can be plotted by adding <span class="code">?id=my_identifier</span> to the URL. Your identifier can be a preselected city or any valid RCC-ACIS identifier. NCDC maintains a <a href="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">list of station identifiers</a>. Preselected cities include: Tucson, Phoenix, Flagstaff, Yuma, Seattle, Portland, Los Angeles. See the javascript variable <span class="code">ids</span> for a full list. (Would be nice if that list were automatically printed here...)
-        </p>
-        <p>
-        The y axis range can be manually set using the following command:
+        By default, the plot will automatically scale the y axis to include all of the data displayed. To turn off autoscaling, use:
         </p>
         <p class="code">
-        chart.autoscale(false).yExtent([ymin, ymax]).redraw()
+        chart.autoscale(false)
+        </p>
+        <p>
+        The chart remembers its autoscale setting. Autoscaling may be turned on again using <span class="code">chart.autoscale(true)</span>.
+        </p>
+        <p>
+        The y axis range can be controlled with the yExtent function. For example, to change the range to 0 to 6 inches, use
+        </p>
+        <p class="code">
+        chart.autoscale(false).yExtent([0,6]).redraw()
+        </p>
+        <p>
+        The MEI month index can be accessed and set using the <span class="code">chart.ensoBin()</span> function. For example, to change the MEI mapping to the May-June average, use the command:
+        </p>
+        <p class="code">
+        chart.ensoBin("MAYJUN").redraw()
+        </p>
+        <p>
+        The input parameter must be a column heading in the MEI table linked to above. 2016 is currently set to a fixed value regardless of this setting.
+        </p>
+        <p>
+        These functions all return <span class="code">chart</span>, which enables them to be chained together like so:
+        </p>
+        <p class="code">
+        chart.autoscale(false).months([1,3]).yExtent([0,6]).ensoBin("MAYJUN").redraw()
+        </p>
+        <p>
+        Many more getter-setter methods are available that provide fine control over the graph. See the source code for details.
+        </p>
+        <p>
+        Additional stations can be plotted by adding <span class="code">?id=my_identifier</span> to the URL. Your identifier can be a preselected city or any valid RCC-ACIS identifier. NCDC maintains a <a href="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">list of station identifiers</a>. Preselected cities include: Tucson, Phoenix, Flagstaff, Yuma, Seattle, Portland, Los Angeles. See the javascript variable <span class="code">ids</span> for a full list. (Would be nice if that list were automatically printed here...)
         </p>
         <p>
         These are new and relatively untested features, so you might run into problems. In the future, I hope to add controls to the page for these features, which brings us to...
@@ -108,11 +138,10 @@
             The source code for this site is on <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a> and released under the MIT license. This means that you can easily copy the code, play with it, contribute your improvements to this page, or use the code as the starting point or inspiration for your own tool.
             Here are some possible improvements:
             <ul>
+            <li>Add controls and URL support for the advanced features.</li>
+            <li>Add support for area averages.</li>
             <li>Add sticky tooltip with total precip for selected years.</li>
             <li>Distinguish between mean and median.</li>
-            <li>Add more locations.</li>
-            <li>Add a control for the MEI month.</li>
-            <li>Implement better support for arbitrary date ranges.</li>
             </ul>
         </p>
         <p>

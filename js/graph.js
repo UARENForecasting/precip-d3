@@ -45,6 +45,7 @@ function precipChart() {
     var tmax_monsoon = new Date(epochYear+1, 9, 0);
     var tmin_full = new Date(epochYear, 9, 1);
     var tmax_full = new Date(epochYear+1, 9, 0);
+    var months;
 
     var bisectDate = d3.bisector(function(d) { return d.date; }).left
 
@@ -138,8 +139,6 @@ function precipChart() {
     var legendXtranslate = 15;
     var legendYtranslate = 5;
 
-
-
     // these set the y axis limits relative to the max/min measurement values
     var maxExpand = 1.22;
     var minExpand = 1.1;
@@ -148,7 +147,7 @@ function precipChart() {
 
     // selection is the parent element automatically passed by d3.selectAll().call()
     function chart(selection, newData, appendToPlot, selectedDatesOnly) {
-        console.log("operating on ", selection);
+        //console.log("operating on ", selection);
 
         selection.each(function(oldData) {
             console.log("oldData: ", oldData);
@@ -383,7 +382,7 @@ function precipChart() {
                     x: barXOffset + 35 + barWidth,
                   })
                 .style("text-anchor", "end")
-                .text(function(d,i) { console.log(d); return parseFloat(d).toFixed(2) });
+                .text(function(d,i) { return parseFloat(d).toFixed(2) });
         gEnter.append("text")
             .attr({x: barXOffset , y:barYOffset-barHeight/2})
             .text('MEI')
@@ -431,7 +430,7 @@ function precipChart() {
 
         startDate.setYear(startYear); // does not work with setFullYear for some reason
         endDate.setYear(endYear);
-        console.log(startDate, endDate);
+        //console.log(startDate, endDate);
 
         // need to be careful since bisect will not return -1
         if (+startDate == +d.values[0].date) {
@@ -439,12 +438,12 @@ function precipChart() {
         } else {
             var index = bisectDate(d.values, startDate) - 1;
             startprecip = d.values[index].cumulativePrecip;
-            console.log('bisected dates. d.key: ', d.key, 'search date: ', startDate, ' index: ', index, ' startprecip: ', startprecip);
+            //console.log('bisected dates. d.key: ', d.key, 'search date: ', startDate, ' index: ', index, ' startprecip: ', startprecip);
         }
 
         var index = bisectDate(d.values, endDate) - 1;
         endprecip = d.values[index].cumulativePrecip;
-        console.log('bisected dates. d.key: ', d.key, 'search date: ', startDate, ' index: ', index, ' endprecip: ', endprecip);
+        //console.log('bisected dates. d.key: ', d.key, 'search date: ', startDate, ' index: ', index, ' endprecip: ', endprecip);
 
         d.values.forEach(function(d2, i) {
             d2.plotDate = getPlotDate(d2.date);
@@ -475,7 +474,7 @@ function precipChart() {
         } else {
             var index = bisectDate(d.values, date) - 1;
             endprecip = d.values[index].cumulativePrecip;
-            console.log('bisected dates. d.key: ', d.key, 'search date: ', date, ' index: ', index, ' startprecip: ', startprecip);
+            //console.log('bisected dates. d.key: ', d.key, 'search date: ', date, ' index: ', index, ' startprecip: ', startprecip);
         }
 
     }
@@ -484,6 +483,15 @@ function precipChart() {
     function getPlotDate(d) {
         var year = d.getMonth() > 8 ? epochYear : epochYear + 1;
         return (new Date(d)).setFullYear(year);
+    }
+
+    chart.ensoBin = function(_) {
+        if (!arguments.length) return ensoBin;
+        if (typeof(ensoIndex["2014"][0][_]) === 'undefined') {
+            throw 'invalid ensoBin';
+        }
+        ensoBin = _;
+        return chart;
     }
 
     function getENSOvalue(d) {
@@ -591,6 +599,8 @@ function precipChart() {
     chart.yExtent = function(_) {
         if (!arguments.length) return yExtent;
         yExtent = _;
+        ymin = yExtent[0];
+        ymax = yExtent[1];
         return chart;
     }
 
@@ -663,7 +673,13 @@ function precipChart() {
         return chart.redraw();
     }
 
-    chart.arbitraryDates = function(startMonth, endMonth, ymin, ymax) {
+    chart.months = function(_) {
+        if (!arguments.length) return months;
+
+        months = _
+        startMonth = months[0];
+        endMonth = months[1]
+
         accumulationOffsetDay = -1;
 
         //year = startDate.getMonth() > 8 ? year : year;
@@ -691,14 +707,10 @@ function precipChart() {
 
         xExtent = [tmin, tmax];
 
-        ymin = (typeof(ymin) === 'undefined') ? ymin_full : ymin
-        ymax = (typeof(ymax) === 'undefined') ? ymax_full : ymax
-        yExtent = [ymin, ymax];
-
         seasonsControls = d3.selectAll(".season-control")
                              .attr("fill", "gray")
 
-        return chart.redraw();
+        return chart;
     }
 
     chart.accumulationOffsetDay = function(_) {
@@ -707,16 +719,22 @@ function precipChart() {
         return chart;
     }
 
-    chart.colorScale = function() {
-        return colorScale;
+    chart.colorScale = function(_) {
+        if (!arguments.length) return colorScale;
+        colorScale = _;
+        return chart;
     }
 
     chart.colorBins = function() {
-        return colorBins;
+        if (!arguments.length) return colorBins;
+        colorBins = _;
+        return chart;
     }
 
     chart.colorBinLabels = function() {
-        return colorBinLabels;
+        if (!arguments.length) return colorBinLabels;
+        colorBinLabels = _;
+        return chart;
     }
 
     chart.redraw = function() {

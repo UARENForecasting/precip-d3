@@ -212,7 +212,7 @@ ids = {'tucson': "USW00023160",
 
 
 function get_acis_data(id) {
-    var id = (typeof(id) === "undefined") ? ids['Tucson'] : id;
+    var id = (typeof(id) === "undefined") ? ids['tucson'] : id;
 
     var url = "http://data.rcc-acis.org/StnData";
 
