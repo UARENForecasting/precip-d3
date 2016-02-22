@@ -77,6 +77,10 @@ var acis_data
 function precip_parser_acis(text) {
     //console.log('precip_parser_acis');
     //console.log(text);
+    if (typeof(text.error) !== 'undefined') {
+        console.log('invalid station, malformed request, or no data available');
+        return;
+    }
 
     var lat = text.meta.ll[1]
     var lon = text.meta.ll[0]
@@ -114,6 +118,52 @@ function precip_parser_acis(text) {
 }
 
 
+function precip_parser_acis_grid(text) {
+    //console.log('precip_parser_acis');
+    //console.log(text);
+    if (typeof(text.error) !== 'undefined') {
+        console.log('invalid station, malformed request, or no data available');
+        return;
+    }
+
+    //var lat = text.meta.ll[1]
+    //var lon = text.meta.ll[0]
+    //var name = text.meta.name
+
+    var data = text.data.map(function(row) {
+        //console.log(row);
+
+        var d = {date: dateparser_acis.parse(row[0]),
+                 precip: +d3.values(row[1])[0]};
+
+        // acis returns "T" for trace, which is turned into NaN by +.
+        // this turns NaNs into 0s.
+        d.precip = isNaN(d.precip) ? 0 : d.precip;
+
+        // calculate waterYear and waterDay attributes
+        var year = d.date.getFullYear();
+        d.waterYear = d.date.getMonth() > 8 ? year + 1 : year;
+        var waterYearStart = new Date(d.waterYear-1, 9, 1);
+        d.waterDay = Math.round((d.date - waterYearStart) / 86400000);
+
+        return d;
+    });
+
+    console.log(data);
+
+    accumulate_precip(data);
+
+    acis_data = data;
+    acis_state = getUrlParameter('state');
+    acis_state = (typeof(acis_state) === 'undefined') ? '' : acis_state.toUpperCase();
+    acis_bbox = getUrlParameter('bbox');
+    acis_bbox = (typeof(acis_bbox) === 'undefined') ? '' : acis_bbox
+    acis_name = acis_bbox + acis_state + ' Average';
+
+    precip_callback_acis(data);
+}
+
+
 // apply this function to data for each year
 // modifies array in place
 function accumulate_precip(d) {
@@ -132,8 +182,6 @@ function dailyPrecipAccessor (d) { return d.precip };
 // apply this function to data for each day
 // returns a new associative array
 function cumulativePrecipMean(dayOfDataByDay) {
-
-
     out = {};
     out.cumulativePrecip = d3.mean(dayOfDataByDay, cumulativePrecipAccessor);
     out.precip = d3.median(dayOfDataByDay, dailyPrecipAccessor);
@@ -200,29 +248,51 @@ function precip_callback_acis(rows) {
 }
 
 
-ids = {'tucson': "USW00023160",
-       'phoenix': "USW00023183",
-       'flagstaff': "USW00003103",
-       'yuma': "USW00023195",
-       'portland': "USW00024229",
-       'seattle': "USW00024233",
-       'los angeles': "USW00023174",
-       'denver': "USW00003017"
-       }
+sids = {'tucson': "USW00023160",
+        'phoenix': "USW00023183",
+        'flagstaff': "USW00003103",
+        'yuma': "USW00023195",
+        'portland': "USW00024229",
+        'seattle': "USW00024233",
+        'los angeles': "USW00023174",
+        'denver': "USW00003017"
+        }
 
 
-function get_acis_data(id) {
-    var id = (typeof(id) === "undefined") ? ids['tucson'] : id;
-
-    var url = "http://data.rcc-acis.org/StnData";
+function get_acis_data(sid, state, bbox) {
+    // bbox does not currently work.
 
     var params = {
-            sid: id,
             sdate: "1950-10-01",
+            //sdate: "2015-10-01",
             edate: dateparser_acis(new Date()),
             elems: [{"name":"pcpn","interval":"dly"}],
             output: "json"
         };
+
+    if (typeof(state) === 'undefined' && typeof(bbox) === 'undefined') {
+        var sid = (typeof(sid) === "undefined") ? sids['tucson'] : sid;
+        var url = "http://data.rcc-acis.org/StnData";
+        params['sid'] = sid;
+        parser = precip_parser_acis
+    } else if (typeof(bbox) === 'undefined'){
+        var url = "http://data.rcc-acis.org/GridData";
+        params['state'] = state;
+        params['grid'] = 1;
+        //params.elems['reduce'] = 'mean';
+        params.elems[0]['area_reduce'] = 'state_mean';
+        //params.elems[0]['smry_only'] = 1;
+        parser = precip_parser_acis_grid
+    } else {
+        var url = "http://data.rcc-acis.org/GridData";
+        params['bbox'] = bbox;
+        params['grid'] = 1;
+        //params.elems[0]['reduce'] = 'mean';
+        params.elems[0]['area_reduce'] = 'state_mean';
+        //params.elems[0]['smry_only'] = 1;
+        //params.elems[0]['smry'] = 'mean';
+        parser = precip_parser_acis_grid
+    }
 
     var params_string = JSON.stringify(params);
     var args = {params: params_string};
@@ -233,7 +303,7 @@ function get_acis_data(id) {
         type: 'POST',
         data: args,
         crossDomain: true,
-        success: precip_parser_acis,
+        success: parser,
         error: handle_acis_error
     });
 }
@@ -270,12 +340,27 @@ function mei_callback(error, rows) {
     //d3.csv(acisURL, precip_parser_acis, precip_callback_acis);
 
     var id = getUrlParameter('id')
-    if (typeof(id) === 'undefined') {
+    var sid = getUrlParameter('sid')
+    var state = getUrlParameter('state')
+    var bbox = getUrlParameter('bbox')
+
+    if (typeof(id) === 'undefined' &&
+        typeof(sid) === 'undefined' &&
+        typeof(state) === 'undefined' &&
+        typeof(bbox) === 'undefined') {
         get_acis_data();
     } else {
-        var savedId = ids[id.toLowerCase()];
-        id = (typeof(savedId) === 'undefined') ? id : savedId;
-        get_acis_data(id);
+        if (typeof(sid) === 'undefined') {
+            sid = id
+        }
+
+        if (typeof(sid) === 'undefined') {
+
+        } else {
+            var savedId = sids[sid.toLowerCase()];
+            sid = (typeof(savedId) === 'undefined') ? sid : savedId;
+        }
+        get_acis_data(sid, state, bbox);
     }
 }
 

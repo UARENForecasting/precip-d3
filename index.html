@@ -77,7 +77,16 @@
 
         <h2>Advanced usage</h2>
         <p>
-        It is possible to manually control the start, end, minimum, and maximum values of the plot, as well as the MEI month index. To do so, you'll need to open up your browser's debugger and use the following functions in your javascript console.
+        Additional stations can be plotted by adding <span class="code">?sid=my_identifier</span> to the URL. Your identifier can be a preselected city or any valid <a href="http://www.rcc-acis.org/docs_webservices.html">RCC-ACIS sid identifier</a>. Your local airport code will probably work. The NCDC maintains a long <a href="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">list of GHCN station identifiers</a>, though data will not be available for every station. Preselected cities include: Tucson, Phoenix, Flagstaff, Yuma, Seattle, Portland, Los Angeles. See the javascript variable <span class="code">ids</span> for a full list. (Would be nice if that list were automatically printed here...)
+        </p>
+        <p>
+        State averages can be plotted by adding <span class="code">?state=my_identifier</span> to the URL where the identifier is the state's two letter postal abbreviation. RCC-ACIS will take ~5 minutes to process these area average requests. Open your browser's debugger/developer tools to see if your request is still processing or if there was an error. I'll eventually add a loading/status dialog box.
+        </p>
+        <p>
+        The mean and median calculations will be wrong if the data record since 1950 is not complete.
+        </p>
+        <p>
+        It is possible to manually control the start, end, minimum, and maximum values of the plot, as well as the MEI month index. To do so, you'll need to open up your browser's debugger/developer tools and use the following functions in your javascript console.
         </p>
         <p>
         To change the dates, use the command:
@@ -128,9 +137,6 @@
         Many more getter-setter methods are available that provide fine control over the graph. See the source code for details.
         </p>
         <p>
-        Additional stations can be plotted by adding <span class="code">?id=my_identifier</span> to the URL. Your identifier can be a preselected city or any valid RCC-ACIS identifier. NCDC maintains a <a href="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">list of station identifiers</a>. Preselected cities include: Tucson, Phoenix, Flagstaff, Yuma, Seattle, Portland, Los Angeles. See the javascript variable <span class="code">ids</span> for a full list. (Would be nice if that list were automatically printed here...)
-        </p>
-        <p>
         These are new and relatively untested features, so you might run into problems. In the future, I hope to add controls to the page for these features, which brings us to...
         </p>
         <h2>Open source</h2>
@@ -139,9 +145,11 @@
             Here are some possible improvements:
             <ul>
             <li>Add controls and URL support for the advanced features.</li>
-            <li>Add support for area averages.</li>
+            <li>Add support for RCC-ACIS' bbox averages.</li>
             <li>Add sticky tooltip with total precip for selected years.</li>
-            <li>Distinguish between mean and median.</li>
+            <li>Distinguish between mean and median. Make one grey or dashed?</li>
+            <li>Put mean and median text in a separate table so that they don't mess up the formatting of the 1st and 2nd columns.</li>
+            <li>Use localStorage to cache data, then only request new data.</li>
             </ul>
         </p>
         <p>
