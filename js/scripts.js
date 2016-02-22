@@ -1,16 +1,17 @@
-
-// set up variables
+// scripts.js is the entry point for the page.
+// Control flows from one callback function to the next.
+// First, MEI data is loaded via d3.csv.
+// The callback function for the MEI load will call the function to
+// request the precip data.
+// The precip data callback function will call the function to make
+// the chart.
 
 // data files
-//var dataURL = 'data/tus_ncdc_1946_2015.csv'; // NCDC daily summary for TUS
-var dataURL = 'data/precip_1950_2015.csv'; // NCDC daily summary for TUS
 var ensoURL = 'data/mei.csv'; // http://www.esrl.noaa.gov/psd/enso/mei/table.html
 
-// eventually replace with data file. this data is from JFM of
-// http://www.cpc.ncep.noaa.gov/products/analysis_monitoring/ensostuff/ensoyears.shtml
-//var ensoIndex = {"2011":-1.1,"2012":-0.6,"2013":-0.5,"2014":-0.6,"2015":0.4}
-
-var dataParsed; // global scope makes life easier while developing
+// global variables
+// maybe bad practice, but global scope makes life easier while developing
+var dataParsed;
 var dataNested;
 var dataNestedByDay;
 var dataStatsByDay;
@@ -174,8 +175,8 @@ function precip_callback(error, rows) {
     dataStatsByDay.push({"key":"median","values":dataNestedByDay.values().map(cumulativePrecipMedian)});
 
     // add the data to the plot
-    d3.selectAll("#Tucson").call(tucsonChart, dataNested, true)
-    d3.selectAll("#Tucson").call(tucsonChart, dataStatsByDay, true)
+    d3.selectAll("#Tucson").call(chart, dataNested, true)
+    d3.selectAll("#Tucson").call(chart, dataStatsByDay, true)
 
     get_acis_data()
 };
@@ -192,8 +193,8 @@ function precip_callback_acis(rows) {
                           .map(dataParsed, d3.map);
 
     // add the data to the plot
-    d3.selectAll("#Tucson").call(tucsonChart, dataNested, true)
-    tucsonChart.title(acis_name + " Cumulative Precipitation")
+    d3.selectAll("#Tucson").call(chart, dataNested, true)
+    chart.title(acis_name + " Cumulative Precipitation")
 
     calc_stats();
 }
@@ -208,6 +209,7 @@ ids = {'tucson': "USW00023160",
        'los angeles': "USW00023174",
        'denver': "USW00003017"
        }
+
 
 function get_acis_data(id) {
     var id = (typeof(id) === "undefined") ? ids['Tucson'] : id;
@@ -246,7 +248,7 @@ function calc_stats() {
     dataStatsByDay = [];
     dataStatsByDay.push({"key":"mean","values":dataNestedByDay.values().map(cumulativePrecipMean)});
     dataStatsByDay.push({"key":"median","values":dataNestedByDay.values().map(cumulativePrecipMedian)});
-    d3.selectAll("#Tucson").call(tucsonChart, dataStatsByDay, true)
+    d3.selectAll("#Tucson").call(chart, dataStatsByDay, true)
 }
 
 
@@ -298,13 +300,13 @@ function initializePlots() {
     var chartHeight = Math.round(chartWidth/aspectRatio);
     var margin = calculateMargin(chartWidth);
 
-    tucsonChart = precipChart().width(chartWidth)
+    chart = precipChart().width(chartWidth)
                                 .height(chartHeight)
                                 .margin(margin);
 
-    charts = [tucsonChart];
+    charts = [chart];
 
-    chartSelectorMapping = { "#Tucson": tucsonChart }
+    chartSelectorMapping = { "#Tucson": chart }
 
     // populate the graphs with the default data
     chartMetadata.forEach(function(thisMetadata) {
@@ -312,7 +314,7 @@ function initializePlots() {
     });
 
     // draw empty graph
-    d3.selectAll("#Tucson").call(tucsonChart, [], true)
+    d3.selectAll("#Tucson").call(chart, [], true)
 }
 
 

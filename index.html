@@ -80,17 +80,25 @@
            It is possible to manually control the start, end, minimum, and maximum values of the plot. To do so, you'll need to open up your browser's debugger and use the following function in your javascript console:
         </p>
         <p class="code">
-        tucsonChart.arbitraryDates(startMonth, endMonth, ymin, ymax)
+        chart.arbitraryDates(startMonth, endMonth, ymin, ymax)
         </p>
         <p>
-        Enter the months as integers (January = 1). The endMonth is inclusive, so enter 2 to plot all of February. The ymin and ymax parameters may be omitted. For example, to show data for only January 1 through February 28/29, and to set the y axis to 0 inches to 5 inches, use the command:
+        Enter the months as integers (January = 1). The endMonth is inclusive, so enter 3 to plot all of March. The ymin and ymax parameters may be omitted. For example, to show data for only January 1 through March 31, and to set the y axis to 0 inches to 6 inches, use the command:
         </p>
         <p class="code">
-        tucsonChart.arbitraryDates(1,2,0,5)
+        chart.autoscale(false).arbitraryDates(1,3,0,6)
         </p>
         <p>
-        Arbitrary stations can be plotted using the <span class="code">get_acis_data(id)</span> function.
-        NCDC maintains a <a href="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">list of station identifiers</a>.
+        The y range settings will be ignored unless autoscale was previously set to false, which explains the need for the first autoscale call. The chart then remembers its autoscale setting. Autoscaling may be turned on again using <span class="code">chart.autoscale(true)</span>.
+        </p>
+        <p>
+        Arbitrary stations can be plotted by adding <span class="code">?id=my_identifier</span> to the URL. Your identifier can be a preselected city or any valid RCC-ACIS identifier. NCDC maintains a <a href="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">list of station identifiers</a>. Preselected cities include: Tucson, Phoenix, Flagstaff, Yuma, Seattle, Portland, Los Angeles. See the javascript variable <span class="code">ids</span> for a full list. (Would be nice if that list were automatically printed here...)
+        </p>
+        <p>
+        The y axis range can be manually set using the following command:
+        </p>
+        <p class="code">
+        chart.autoscale(false).yExtent([ymin, ymax]).redraw()
         </p>
         <p>
         These are new and relatively untested features, so you might run into problems. In the future, I hope to add controls to the page for these features, which brings us to...

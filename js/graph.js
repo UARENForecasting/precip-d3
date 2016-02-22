@@ -59,6 +59,7 @@ function precipChart() {
     var ymin_full = 0;
     var ymax_full = 20;
     var yExtent = [ymin_cool, ymax_cool];
+    var autoscale = true;
 
     // calculate offsets for time zones.
     // not used here?
@@ -241,39 +242,14 @@ function precipChart() {
             // calculate cumulative precip based on plot start date
             remainingLines.each(rezeroAccumulation)
 
-            // set up x and y axes
-            // arrays to dump mins and maxes in
-            var tmins = [];
-            var tmaxes = [];
-            var ymins = [0];
-            var ymaxes = [];
-            var ymin, ymax;
-
-            // loop through selection to find min/max values for each data set
-//             remainingLines.each( function (d) {
-//
-//                 ymin = d3.min(d.data, function(d) { return d.precip; });
-//                 ymax = d3.max(d.data, function(d) { return d.precip; });
-//
-//                 tmins.push(d3.min(d.data, function(d) { return d.time; }));
-//                 tmaxes.push(d3.max(d.data, function(d) { return d.time; }));
-//
-//                 d3.select(this).attr("min", ymin)
-//                 d3.select(this).attr("max", ymax)
-//                 ymins.push(ymin);
-//                 ymaxes.push(ymax);
-//                 //ymaxes.push(d.peak_power);
-//             });
+            if (autoscale) {
+                var ymin, ymax;
+                ymax = d3.max(remainingLines.data(), function(d) {
+                    return d.cumulativePrecipPlotMax; })
+                yExtent = [0, ymax];
+            }
 
             console.log("xExtent: ", xExtent);
-
-//             ymin = d3.min(ymins, function(d) { return d; });
-//             ymax = d3.max(ymaxes, function(d) { return d; });
-//             if (typeof ymax === "undefined") {
-//                 ymax = 1000;
-//             }
-//             yExtent = [ymin*minExpand, ymax*maxExpand];
-//             yExtent = [0, 12];
             console.log("yExtent: ", yExtent);
 
             // Update the x-scale.
@@ -283,7 +259,6 @@ function precipChart() {
             // Update the y-scale.
             yScale.domain(yExtent)
                   .range([height - margin.top - margin.bottom, 0]);
-
 
 
             // finally draw/redraw the lines using the new scale
@@ -628,6 +603,12 @@ function precipChart() {
     chart.yScale = function(_) {
         if (!arguments.length) return yScale;
         yScale = _;
+        return chart;
+    }
+
+    chart.autoscale = function(_) {
+        if (!arguments.length) return autoscale;
+        autoscale = _;
         return chart;
     }
 
