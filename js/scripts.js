@@ -76,6 +76,11 @@ var acis_data
 function precip_parser_acis(text) {
     //console.log('precip_parser_acis');
     //console.log(text);
+
+    var lat = text.meta.ll[1]
+    var lon = text.meta.ll[0]
+    var name = text.meta.name
+
     var data = text.data.map(function(row) {
         //console.log(row);
 
@@ -100,6 +105,9 @@ function precip_parser_acis(text) {
     accumulate_precip(data);
 
     acis_data = data;
+    acis_name = name;
+    acis_lat = lat;
+    acis_lon = lon;
 
     precip_callback_acis(data);
 }
@@ -180,19 +188,35 @@ function precip_callback_acis(rows) {
                           .entries(dataParsed);
     dataNested.forEach(function (d) { accumulate_precip(d.values) });
 
+    dataNestedByDay = d3.nest().key(function(d) { return d.waterDay; })
+                          .map(dataParsed, d3.map);
+
     // add the data to the plot
     d3.selectAll("#Tucson").call(tucsonChart, dataNested, true)
+    tucsonChart.title(acis_name + " Cumulative Precipitation")
+
+    calc_stats();
 }
 
 
-function get_acis_data() {
-    var sid = "GHCND:USW00023160";
+ids = {'tucson': "USW00023160",
+       'phoenix': "USW00023183",
+       'flagstaff': "USW00003103",
+       'yuma': "USW00023195",
+       'portland': "USW00024229",
+       'seattle': "USW00024233",
+       'los angeles': "USW00023174",
+       'denver': "USW00003017"
+       }
+
+function get_acis_data(id) {
+    var id = (typeof(id) === "undefined") ? ids['Tucson'] : id;
 
     var url = "http://data.rcc-acis.org/StnData";
 
     var params = {
-            sid: "USW00023160",
-            sdate: "2015-10-01",
+            sid: id,
+            sdate: "1950-10-01",
             edate: dateparser_acis(new Date()),
             elems: [{"name":"pcpn","interval":"dly"}],
             output: "json"
@@ -208,8 +232,21 @@ function get_acis_data() {
         data: args,
         crossDomain: true,
         success: precip_parser_acis,
-        error: function(error) {console.log(error)}
+        error: handle_acis_error
     });
+}
+
+
+function handle_acis_error(error) {
+    console.log(error);
+}
+
+
+function calc_stats() {
+    dataStatsByDay = [];
+    dataStatsByDay.push({"key":"mean","values":dataNestedByDay.values().map(cumulativePrecipMean)});
+    dataStatsByDay.push({"key":"median","values":dataNestedByDay.values().map(cumulativePrecipMedian)});
+    d3.selectAll("#Tucson").call(tucsonChart, dataStatsByDay, true)
 }
 
 
@@ -227,15 +264,24 @@ function mei_callback(error, rows) {
 
     ensoIndex = d3.nest().key(function(d) { return d.YEAR; }).map(rows);
 
-    d3.csv(dataURL, precip_parser, precip_callback);
+    //d3.csv(dataURL, precip_parser, precip_callback);
     //d3.csv(acisURL, precip_parser_acis, precip_callback_acis);
+
+    var id = getUrlParameter('id')
+    if (typeof(id) === 'undefined') {
+        get_acis_data();
+    } else {
+        var savedId = ids[id.toLowerCase()];
+        id = (typeof(savedId) === 'undefined') ? id : savedId;
+        get_acis_data(id);
+    }
 }
 
 // a function to construct the graph elements.
 function initializePlots() {
 
     var chartMetadata = [
-         {id:"Tucson", title:"Tucson Cumulative Precipitation"},
+         {id:"Tucson", title:"Cumulative Precipitation"},
          ];
 
     newChartDivs = d3.select(dataDiv).selectAll("div .chart")
@@ -254,8 +300,7 @@ function initializePlots() {
 
     tucsonChart = precipChart().width(chartWidth)
                                 .height(chartHeight)
-                                .margin(margin)
-                                .title("Tucson Cumulative Precipitation");
+                                .margin(margin);
 
     charts = [tucsonChart];
 
@@ -279,4 +324,17 @@ function calculateMargin(chartWidth) {
 }
 
 
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
 
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+};

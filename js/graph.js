@@ -23,7 +23,7 @@ function precipChart() {
 
     var innerWidth = width - margin.left - margin.right;
 
-    var title = "chart title";
+    var title = "Cumulative Precipitation";
 
     // x and y axis set up
 
