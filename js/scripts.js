@@ -7,7 +7,8 @@
 // the chart.
 
 // data files
-var ensoURL = 'data/mei.csv'; // http://www.esrl.noaa.gov/psd/enso/mei/table.html
+var meiURL = 'data/mei.csv'; // http://www.esrl.noaa.gov/psd/enso/mei/table.html
+var oniURL = 'data/oni.csv'; // obtained from https://data.hdx.rwlabs.org/dataset/monthly-oceanic-nino-index-oni/resource/ba1a3d4e-6067-4b72-a2e1-9a9b5c622080
 
 // global variables
 // maybe bad practice, but global scope makes life easier while developing
@@ -15,7 +16,11 @@ var dataParsed;
 var dataNested;
 var dataNestedByDay;
 var dataStatsByDay;
-var ensoIndex;
+
+var ensoIndexData;
+var oniIndex;
+var meiIndex;
+var ensoIndexMapping = {};
 
 // chart defaults
 var dataDiv = "#data";
@@ -39,7 +44,8 @@ $(function() {
 
     // mei_callback has the call to precip_callback
     // need to do it in order so the mei data is available first
-    d3.csv(ensoURL, mei_parser, mei_callback);
+    d3.csv(meiURL, mei_parser, mei_callback);
+    d3.csv(oniURL, oni_parser, oni_callback);
 });
 
 
@@ -334,11 +340,31 @@ function mei_callback(error, rows) {
     console.log(error);
     console.log('retrieved mei data: ', rows);
 
-    ensoIndex = d3.nest().key(function(d) { return d.YEAR; }).map(rows);
+    meiIndex = d3.nest().key(function(d) { return d.YEAR; }).map(rows);
+    ensoIndexMapping['MEI'] = meiIndex;
+    chart.ensoIndex('MEI');
 
-    //d3.csv(dataURL, precip_parser, precip_callback);
-    //d3.csv(acisURL, precip_parser_acis, precip_callback_acis);
+    parse_url_and_get_data();
+}
 
+
+function oni_parser(d) {
+    //console.log(d);
+
+    d.year = +d.Year
+
+    return d;
+}
+
+function oni_callback(error, rows) {
+    console.log(error);
+    console.log('retrieved oni data: ', rows);
+
+    oniIndex = d3.nest().key(function(d) { return d.Year; }).map(rows);
+    ensoIndexMapping['ONI'] = oniIndex;
+}
+
+function parse_url_and_get_data() {
     var id = getUrlParameter('id')
     var sid = getUrlParameter('sid')
     var state = getUrlParameter('state')

@@ -106,24 +106,21 @@ function precipChart() {
     var tzLabelX = function() { return innerWidth - tzLabelOffset };
     var tzLabelY = 40;
 
+    // scope the color bars variables were scoped initially, but
+    // defer their assignment until the chart function has been defined.
+    // this makes it so that all of the color bar logic is in one place:
+    // the chart.colorBinScheme getter/setter function
+    var colorDomain;
+    var colors;
+    var colorScale;
+    var colorBins;
+    var colorBinLabels;
+    var colorBinScheme;
 
-    // construct the color scale (the code, not the legend)
-    //var colors =['#2D8098', '#2A6778', '#274E5A', '#24363A', '#212121', '#4D2426', '#7F262E', '#B22833', '#E42A38'].reverse()
-    var colors = colorbrewer.RdYlBu[10]
-    var colors = colorbrewer.RdBu[9]
-//     var colorDomain = [-2.5,2.5];
-    var colorDomain = [-2.25,2.25];
-//     var colorDomain = [-2,2];
-    var colorScale = d3.scale.quantize().domain(colorDomain).range(colors);
-
-    // make stuff for legend.
-    // the values at which the color bins will be evaluated.
-    // add a little bit to the divider values to remove float weirdness.
-    var eps = .0000001;
-    var colorBins = colors.map(function(d){return colorScale.invertExtent(d)[0]+eps});
-    // the labels for the color bins
-    var colorBinLabels = colors.map(function(d){return colorScale.invertExtent(d)[0]});
-    colorBinLabels.push(colorScale.invertExtent(colors[colors.length-1])[1]);
+    var barHeight = 20;
+    var barWidth = 20;
+    var barYOffset = 20;
+    var barXOffset = 20;
 
     var strokeWidthNormal = 1;
     var strokeOpacityNormal = 0.75;
@@ -131,7 +128,9 @@ function precipChart() {
     var strokeOpacityHighlighted = 1;
 
     var ensoBin = "JANFEB";
+    var ensoIndex = 'MEI';
 
+    var ensoIndex;
     var tooltip;
 
     var enlargeAllowed = false;
@@ -170,7 +169,7 @@ function precipChart() {
             gEnter.append("text")
                     .attr("class", "title")
 
-            gEnter = createColorbar(gEnter);
+            //gEnter = createColorbar(gEnter);
 
             gEnter = createSeasonControl(gEnter);
 
@@ -199,6 +198,8 @@ function precipChart() {
             var g = svg.select("g")
                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
             innerWidth = width - margin.left - margin.right;
+
+            g = enterUpdateColorbar(g);
 
             // DATA JOIN
             // Join new data with old, if any.
@@ -298,6 +299,9 @@ function precipChart() {
                 //hideLoadingDialog();
             }
 
+            // update color bar
+            //updateColorbar(g)
+
             // create year table DOM element
             var table = containingSelection.selectAll("table").data([1])
                                                               .enter()
@@ -351,17 +355,22 @@ function precipChart() {
         return gEnter;
     }
 
-    function createColorbar(gEnter) {
+    function enterUpdateColorbar(g) {
         // create colorbar for legend
         // http://tributary.io/tributary/3650755/
-        var barHeight = 20;
-        var barWidth = 20;
-        var barYOffset = 20;
-        var barXOffset = 20;
 
-        var bars = gEnter.selectAll("rect.colorbar").data(colorBins.reverse()).enter()
-        bars.append("rect")
-                .attr({
+        // the chart variables were scoped initially, but not defined
+        // so run the scheme code, if necessary.
+        // this makes it so that all of the logic is in one place.
+        if (typeof(colorBinScheme) === 'undefined') {
+            chart.colorBinScheme('default');
+        }
+
+        var bars = g.selectAll("rect.colorbar").data(colorBins)
+        bars.enter()
+            .append("rect")
+            .attr("class", "colorbar")
+        bars.attr({
                     width: barWidth,
                     height: barHeight,
                     y: function(d,i) {
@@ -372,10 +381,13 @@ function precipChart() {
                       return colorScale(d+.0001);
                     }
                   })
+        bars.exit().remove();
 
-        var labels = gEnter.selectAll("text.colorbarlabels").data(colorBinLabels.reverse()).enter()
-        labels.append("text")
-                .attr({
+        var labels = g.selectAll("text.colorbarlabels").data(colorBinLabels)
+        labels.enter()
+              .append("text")
+              .attr("class", "colorbarlabels")
+        labels.attr({
                     y: function(d,i) {
                       return (i+0.25) * barHeight + barYOffset;
                     },
@@ -383,11 +395,16 @@ function precipChart() {
                   })
                 .style("text-anchor", "end")
                 .text(function(d,i) { return parseFloat(d).toFixed(2) });
-        gEnter.append("text")
-            .attr({x: barXOffset , y:barYOffset-barHeight/2})
-            .text('MEI')
+        labels.exit().remove()
 
-        return gEnter
+        var title = g.selectAll("text#legend-title").data([chart.ensoIndex()])
+        title.enter()
+            .append("text")
+            .attr("id", "legend-title")
+        title.attr({x: barXOffset , y:barYOffset-barHeight/2})
+            .text(function (d) { return d; })
+
+        return g
     }
 
     function createSeasonControl(gEnter) {
@@ -487,8 +504,13 @@ function precipChart() {
 
     chart.ensoBin = function(_) {
         if (!arguments.length) return ensoBin;
-        if (typeof(ensoIndex["2014"][0][_]) === 'undefined') {
-            throw 'invalid ensoBin';
+        _ = _.toUpperCase();
+        if (chart.ensoIndex() === 'MEI' &&
+            typeof(ensoIndexData["2014"][0][_]) === 'undefined') {
+            throw 'invalid ensoBin for MEI';
+        } else if (chart.ensoIndex() === 'ONI' &&
+                   typeof(ensoIndexData["2014"][0][_]) === 'undefined') {
+            throw 'invalid ensoBin for ONI';
         }
         ensoBin = _;
         return chart;
@@ -498,13 +520,15 @@ function precipChart() {
         var ensoval;
 
         if (d.key == 'mean' || d.key == 'median') {
-            ensoval = 'N/A';
-        } else if (d.key == '2016') {
-            ensoval = 2.202.toFixed(2);
+            return 'N/A';
+        } else if (d.key == '2016' && ensoIndex == 'MEI') {
+            ensoval = 2.202
+        } else if (d.key == '2016' && ensoIndex == 'ONI') {
+            ensoval = 2.3
         } else {
-            ensoval = parseFloat(ensoIndex[d.key][0][ensoBin]).toFixed(2);
+            ensoval = parseFloat(ensoIndexData[d.key][0][ensoBin])
         }
-        return ensoval
+        return ensoval.toFixed(2);
     }
 
     function getENSOcolor(d) {
@@ -713,6 +737,14 @@ function precipChart() {
         return chart;
     }
 
+    chart.ensoIndex = function(_) {
+        if (!arguments.length) return ensoIndex;
+        ensoIndex = _.toUpperCase();
+        ensoIndexData = ensoIndexMapping[ensoIndex];
+
+        return chart;
+    }
+
     chart.accumulationOffsetDay = function(_) {
         if (!arguments.length) return accumulationOffsetDay;
         accumulationOffsetDay = _;
@@ -735,6 +767,57 @@ function precipChart() {
         if (!arguments.length) return colorBinLabels;
         colorBinLabels = _;
         return chart;
+    }
+
+    chart.colorDomain = function() {
+        if (!arguments.length) return colorDomain;
+        colorDomain = _;
+        return chart;
+    }
+
+    chart.colors = function() {
+        if (!arguments.length) return colors;
+        colors = _;
+        return chart;
+    }
+
+    chart.colorBinScheme = function(_) {
+        if (!arguments.length) return colorBinScheme;
+        _ = _.toLowerCase();
+        if (_ === "default") {
+            colorBinScheme = _;
+            colorDomain = [-2.25,2.25];
+            colors = colorbrewer.RdBu[9]
+        } else if (_ === "noaa") {
+            colorBinScheme = _;
+            colorDomain = [-2.5,2.5];
+            colors = ["#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#f7f7f7", "#f7f7f7", "#d1e5f0", "#92c5de", "#4393c3", "#2166ac"]
+        } else {
+            throw "invalid colorScheme";
+        }
+
+        colorScale = d3.scale.quantize().domain(colorDomain).range(colors);
+
+        // the values at which the color bins will be evaluated.
+        // add a little bit to the divider values to remove float weirdness.
+        var eps = .0000001;
+        colorBins = colors.map(function(d){return colorScale.invertExtent(d)[0]+eps});
+        // the labels for the color bins
+        colorBinLabels = colors.map(function(d){return colorScale.invertExtent(d)[0]});
+        colorBinLabels.push(colorScale.invertExtent(colors[colors.length-1])[1]);
+
+        if (colorBinScheme === "noaa") {
+            colorBinLabels[5] = 0.00;
+        }
+
+        colorBins.reverse();
+        colorBinLabels.reverse();
+
+        return chart;
+    }
+
+    chart.reset = function() {
+        chart.ensoIndex('mei').ensoBin('janfeb').colorBinScheme('default').redraw()
     }
 
     chart.redraw = function() {
@@ -1002,7 +1085,7 @@ function precipChart() {
 
         var yval = data.values[xdata.waterDay].cumulativePrecipPlot;
         yvalText = parseFloat(yval.toFixed(2)) + " in";
-        var ensoval = "MEI " + getENSOvalue(data);
+        var ensoval = chart.ensoIndex() + " " + getENSOvalue(data);
 
         var text = data.key + ". " + yvalText + ", " + ensoval;
         //console.log(text);
@@ -1025,7 +1108,7 @@ function precipChart() {
 
         var yval = data.values[xdata.waterDay].cumulativePrecipPlot;
         yvalText = parseFloat(yval.toFixed(2)) + " in";
-        var ensoval = "MEI " + getENSOvalue(data);
+        var ensoval = chart.ensoIndex() + " " + getENSOvalue(data);
 
         var text = data.key + ". " + yvalText + ", " + ensoval;
         //console.log(text);
@@ -1083,7 +1166,7 @@ function createTooltipText(name, date, day, precip, dailyPrecip, enso) {
 //     sRet += '<div class="tooltip-date">' + 'Day ' + day + '</div>';
     sRet += '<div class="tooltip-value">' + '1 Day Precip: ' + dailyPrecip + '</div>';
     sRet += '<div class="tooltip-value">' + 'Cumulative Precip: ' + precip + '</div>';
-    sRet += '<div class="tooltip-value">' + 'MEI: ' + enso + '</div>';
+    sRet += '<div class="tooltip-value">' + chart.ensoIndex() + ': ' + enso + '</div>';
 
     return sRet;
 }
