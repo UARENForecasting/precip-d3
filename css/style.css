@@ -14,7 +14,11 @@ body {
 
 #map-canvas { height: 500px; }
 
-.code { font-family: monospace };
+p.code {
+    font-family: monospace;
+    margin-left: 20px
+}
+span.code { font-family: monospace }
 
 /*
 a {
