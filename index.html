@@ -47,6 +47,7 @@
     </div>
 
 <div id="content">
+    <!-- the chart function will populate the data div -->
     <div id="data"></div>
 
     <div id="intro">
@@ -71,10 +72,10 @@
             Mobile devices are not supported.
         </p>
 
-        <h2>Data</h2>
+        <h2>Data sources</h2>
         <p>Precipitation data from comes from <a href="http://www.rcc-acis.org/docs_webservices.html">RCC-ACIS</a>.</p>
         <p><a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI data</a> comes from <a href="http://www.esrl.noaa.gov">NOAA ESRL</a>.</p>
-        <p>ONI data comes from a <a href="https://data.hdx.rwlabs.org/dataset/monthly-oceanic-nino-index-oni/resource/ba1a3d4e-6067-4b72-a2e1-9a9b5c622080">random csv file</a>. I'd prefer to use an official table, but I couldn't find a properly formatted csv or tsv file.</p>
+        <p>ONI data comes from a unofficial <a href="https://data.hdx.rwlabs.org/dataset/monthly-oceanic-nino-index-oni/resource/ba1a3d4e-6067-4b72-a2e1-9a9b5c622080">csv file</a>. I'd prefer to use an official table, but I couldn't find a properly formatted csv or tsv file.</p>
 
         <h2>Advanced usage</h2>
         <p>
@@ -169,10 +170,10 @@
             <li>Add support for RCC-ACIS' bbox averages.</li>
             <li>Add sticky tooltip with total precip for selected years.</li>
             <li>Distinguish between mean and median. Make one grey or dashed?</li>
-            <li>Put mean and median text in a separate table so that they don't mess up the formatting of the 1st and 2nd columns.</li>
             <li>Use localStorage to cache data, then only request new data.</li>
             </ul>
         </p>
+        <h2>Credits</h2>
         <p>
             Plot inspired by Mike Crimmins' excellent <a href="http://cals.arizona.edu/climate/misc/monsoon/monsoon_summaries.html">Monsoon plots</a>
             and Ben McMahan and Mike's CLIMAS <a href="http://www.climas.arizona.edu/blog/el-niño-here…what-exactly-does-mean-arizona-and-new-mexico">blog post</a>.

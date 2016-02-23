@@ -11,7 +11,7 @@ function precipChart() {
     var containerWidth = Math.round(containerWidth*size);
     var aspectRatio = 16.0/8.0;
 
-    var containingDivId = "#Tucson";
+    var containingDivId = "#chart";
     var containingSelection;
 
     var margin = {top: 50,
@@ -162,14 +162,12 @@ function precipChart() {
             var gEnter = svg.enter().insert("svg", ":first-child")
                                     .append("g");
 
-            console.log(gEnter);
+            //console.log(gEnter);
 
             gEnter = createAxesAndLabels(gEnter);
 
             gEnter.append("text")
                     .attr("class", "title")
-
-            //gEnter = createColorbar(gEnter);
 
             gEnter = createSeasonControl(gEnter);
 
@@ -268,7 +266,7 @@ function precipChart() {
                                     var plotDate = getPlotDate(d2.date);
                                     return (xExtent[0] <= plotDate) && (plotDate <= xExtent[1]);
                                 })
-                          )})
+                            )})
                           .attr("class", "line")
                           .attr("stroke", getENSOcolor )
                           .attr("stroke-width", get_strokeWidthNormal)
@@ -299,35 +297,44 @@ function precipChart() {
                 //hideLoadingDialog();
             }
 
-            // update color bar
-            //updateColorbar(g)
-
-            // create year table DOM element
-            var table = containingSelection.selectAll("table").data([1])
-                                                              .enter()
-                                                              .append("table")
-                                                              .attr("class", "year-selector")
-
-            // nest data by decade
-            var nestedYears = d3.nest().key(function (d) { return Math.floor((+d.key-11)/20); })
+            // nest data by stats vs. years, then by decade
+            var nestedYears = d3.nest().key(function (d) { return (d.key === 'mean' || d.key === 'median') ? 'statistics' : 'years'; })
+                                       .key(function (d) { return Math.floor((+d.key-11)/20); })
                                        .entries(newData);
 
             console.log("nestedYears: ", nestedYears);
 
-            var tr = containingSelection.select("table").selectAll("tr")
-                                            .data(nestedYears, function(d) { return d.key })
-                                            .enter()
-                                            .append("tr");
+            // create a div, if necessary, to hold the two tables
+            // this allows both tables to be left
+            // justified within a centered div.
+            containingSelection.selectAll("div#tables").data([1])
+                                                        .enter()
+                                                         .append("div")
+                                                         .attr("id", "tables")
+                                                         .attr("class", "year-selector")
 
-            var tr = containingSelection.select("table").selectAll("tr")
-            var td = tr.selectAll("td").data(function (d) { return d.values }, function (d2) { return d2.key } )
-                                        .enter()
-                                        .append("td")
-                                        .html(function(d) {return d.key})
-                                        .style("color", getENSOcolor )
-                                        .on("click", chart.tableYearClick)
-                                        .on("mouseover", chart.tableYearMouseover)
-                                        .on("mouseout", chart.tableyearMouseout);
+            // select and possibly create table DOM elements for years and stats
+            var table = d3.select("#tables").selectAll("table").data(nestedYears,
+                                                                     function(d) { return d.key; });
+            table.enter()
+                    .append("table")
+                    .attr("id", function (d) { return d.key; })
+
+            // create rows based on propagated data
+            var tr = table.selectAll("tr").data(function(d) { return d.values })
+            tr.enter()
+                .append("tr");
+
+            // create cells within rows based on propagated data
+            var td = tr.selectAll("td").data(function (d) { return d.values; },
+                                             function (d2) { return d2.key; } );
+            td.enter()
+                .append("td")
+                .html(function(d) {return d.key})
+                .style("color", getENSOcolor )
+                .on("click", chart.tableYearClick)
+                .on("mouseover", chart.tableYearMouseover)
+                .on("mouseout", chart.tableYearMouseout);
 
         }); // end of selection.each()
     }; // end of chart()
@@ -467,6 +474,7 @@ function precipChart() {
             d2.cumulativePrecipPlot = d2.cumulativePrecip - startprecip;
         })
 
+        // store for later use with autoscaling
         d.cumulativePrecipPlotMax = endprecip - startprecip;
     }
 
@@ -784,14 +792,16 @@ function precipChart() {
     chart.colorBinScheme = function(_) {
         if (!arguments.length) return colorBinScheme;
         _ = _.toLowerCase();
+        var white = "#f5f5f5"; // colorbrewer RuBl9 default is f7f7f7
+        var white = "#f1f1f1";
         if (_ === "default") {
             colorBinScheme = _;
             colorDomain = [-2.25,2.25];
-            colors = colorbrewer.RdBu[9]
+            colors = ["#b2182b", "#d6604d", "#f4a582", "#fddbc7", white, "#d1e5f0", "#92c5de", "#4393c3", "#2166ac"]
         } else if (_ === "noaa") {
             colorBinScheme = _;
             colorDomain = [-2.5,2.5];
-            colors = ["#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#f7f7f7", "#f7f7f7", "#d1e5f0", "#92c5de", "#4393c3", "#2166ac"]
+            colors = ["#b2182b", "#d6604d", "#f4a582", "#fddbc7", white, white, "#d1e5f0", "#92c5de", "#4393c3", "#2166ac"]
         } else {
             throw "invalid colorScheme";
         }
@@ -948,10 +958,10 @@ function precipChart() {
         var xdata = invertxpnt(point[0], thisLineData);
 
         var yval = thisLineData.values[xdata.waterDay].cumulativePrecipPlot;
-        var yval = parseFloat(yval.toFixed(2)) + " in";
+        var yval = parseFloat(yval).toFixed(2) + " in";
 
         var dailyPrecip = thisLineData.values[xdata.waterDay].precip;
-        dailyPrecip = parseFloat(dailyPrecip.toFixed(2)) + " in";
+        dailyPrecip = parseFloat(dailyPrecip).toFixed(2) + " in";
 
         var ensoval = getENSOvalue(thisLineData);
 
@@ -971,10 +981,10 @@ function precipChart() {
         var xdata = invertxpnt(point[0], thisLineData);
 
         var yval = thisLineData.values[xdata.waterDay].cumulativePrecipPlot;
-        yval = parseFloat(yval.toFixed(2)) + " in";
+        yval = parseFloat(yval).toFixed(2) + " in";
 
         var dailyPrecip = thisLineData.values[xdata.waterDay].precip;
-        dailyPrecip = parseFloat(dailyPrecip.toFixed(2)) + " in";
+        dailyPrecip = parseFloat(dailyPrecip).toFixed(2) + " in";
 
         var ensoval = getENSOvalue(thisLineData);
 
@@ -1054,7 +1064,7 @@ function precipChart() {
         addEndOfYearText(data, yearLineg);
     }
 
-    chart.tableyearMouseout = function (d, i) {
+    chart.tableYearMouseout = function (d, i) {
         var thisSelection = d3.select(this)
         var active = thisSelection.classed("active");
         //thisSelection.classed("active", !currentClass);
@@ -1084,7 +1094,7 @@ function precipChart() {
         //console.log(xdata);
 
         var yval = data.values[xdata.waterDay].cumulativePrecipPlot;
-        yvalText = parseFloat(yval.toFixed(2)) + " in";
+        yvalText = parseFloat(yval).toFixed(2) + " in";
         var ensoval = chart.ensoIndex() + " " + getENSOvalue(data);
 
         var text = data.key + ". " + yvalText + ", " + ensoval;
@@ -1107,7 +1117,7 @@ function precipChart() {
         //console.log(xdata);
 
         var yval = data.values[xdata.waterDay].cumulativePrecipPlot;
-        yvalText = parseFloat(yval.toFixed(2)) + " in";
+        yvalText = parseFloat(yval).toFixed(2) + " in";
         var ensoval = chart.ensoIndex() + " " + getENSOvalue(data);
 
         var text = data.key + ". " + yvalText + ", " + ensoval;

@@ -229,8 +229,8 @@ function precip_callback(error, rows) {
     dataStatsByDay.push({"key":"median","values":dataNestedByDay.values().map(cumulativePrecipMedian)});
 
     // add the data to the plot
-    d3.selectAll("#Tucson").call(chart, dataNested, true)
-    d3.selectAll("#Tucson").call(chart, dataStatsByDay, true)
+    d3.selectAll("#chart").call(chart, dataNested, true)
+    d3.selectAll("#chart").call(chart, dataStatsByDay, true)
 
     get_acis_data()
 };
@@ -247,7 +247,7 @@ function precip_callback_acis(rows) {
                           .map(dataParsed, d3.map);
 
     // add the data to the plot
-    d3.selectAll("#Tucson").call(chart, dataNested, true)
+    d3.selectAll("#chart").call(chart, dataNested, true)
     chart.title(acis_name + " Cumulative Precipitation")
 
     calc_stats();
@@ -324,7 +324,7 @@ function calc_stats() {
     dataStatsByDay = [];
     dataStatsByDay.push({"key":"mean","values":dataNestedByDay.values().map(cumulativePrecipMean)});
     dataStatsByDay.push({"key":"median","values":dataNestedByDay.values().map(cumulativePrecipMedian)});
-    d3.selectAll("#Tucson").call(chart, dataStatsByDay, true)
+    d3.selectAll("#chart").call(chart, dataStatsByDay, true)
 }
 
 
@@ -394,7 +394,7 @@ function parse_url_and_get_data() {
 function initializePlots() {
 
     var chartMetadata = [
-         {id:"Tucson", title:"Cumulative Precipitation"},
+         {id:"chart", title:"Cumulative Precipitation"},
          ];
 
     newChartDivs = d3.select(dataDiv).selectAll("div .chart")
@@ -417,7 +417,7 @@ function initializePlots() {
 
     charts = [chart];
 
-    chartSelectorMapping = { "#Tucson": chart }
+    chartSelectorMapping = { "#chart": chart }
 
     // populate the graphs with the default data
     chartMetadata.forEach(function(thisMetadata) {
@@ -425,7 +425,7 @@ function initializePlots() {
     });
 
     // draw empty graph
-    d3.selectAll("#Tucson").call(chart, [], true)
+    d3.selectAll("#chart").call(chart, [], true)
 }
 
 
