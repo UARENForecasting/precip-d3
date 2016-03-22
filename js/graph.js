@@ -529,14 +529,28 @@ function precipChart() {
 
         if (d.key == 'mean' || d.key == 'median') {
             return 'N/A';
-        } else if (d.key == '2016' && ensoIndex == 'MEI') {
-            ensoval = 2.202
-        } else if (d.key == '2016' && ensoIndex == 'ONI') {
-            ensoval = 2.3
         } else {
-            ensoval = parseFloat(ensoIndexData[d.key][0][ensoBin])
+            ensoval = ensoIndexData[d.key][0][ensoBin];
+            if (typeof(ensoval) === "undefined") {
+                console.log('invalid ensoBin ', ensoBin, '. using most recent for year ', d.key)
+                var ordering
+                if (ensoIndex == 'MEI') {
+                    ordering = 'DECJAN,JANFEB,FEBMAR,MARAPR,APRMAY,MAYJUN,JUNJUL,JULAUG,AUGSEP,SEPOCT,OCTNOV,NOVDEC';
+                } else if (ensoIndex == 'ONI') {
+                    ordering = 'DJF,JFM,FMA,MAM,AMJ,MJJ,JJA,JAS,ASO,SON,OND,NDJ';
+                }
+                ordering = ordering.split(',').reverse();
+                for (var i=0; i<ordering.length; i++) {
+                    ensoval = ensoIndexData[d.key][0][ordering[i]];
+                    if (typeof(ensoval) === "undefined") {
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+            }
         }
-        return ensoval.toFixed(2);
+        return parseFloat(ensoval).toFixed(2);
     }
 
     function getENSOcolor(d) {
