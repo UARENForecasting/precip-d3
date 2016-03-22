@@ -55,8 +55,6 @@
             This plot shows the cumulative precipitation at Tucson International Airport for each year since 1951.
             The data is colored by the strength of El Nino (blue) or La Nina (red) in that year, specifically the Jan-Feb <a href="http://www.esrl.noaa.gov/psd/enso/mei/index.html">Multivariate ENSO Index (MEI)</a>.
             The Tucson water year starts on October 1 of the previous year.
-            The 2016 Jan-Feb MEI is nearly certain to be greater than 2.
-            The 2016 data is colored by the most recent MEI value available.
         </p>
         <h2>Tips</h2>
             <ul>
@@ -127,7 +125,7 @@
         chart.ensoBin("MAYJUN").redraw()
         </p>
         <p>
-        The input parameter must be a column heading in the MEI table linked to above. 2016 is currently set to a fixed value regardless of this setting.
+        The input parameter must be a column heading in the MEI table linked to above. If data for that bin for the most recent year is not yet available, then the most recent data that is available will be used.
         </p>
         <p>
         The El Nino index can be toggled between the MEI and the more standard ONI using <span class="code">chart.ensoIndex()</span>. You will also need to change the ensoBin setting since the indicies use different time averaging methods. For example:
