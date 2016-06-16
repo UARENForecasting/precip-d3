@@ -249,7 +249,8 @@ function precip_callback_acis(rows) {
     // add the data to the plot
     d3.selectAll("#chart").call(chart, dataNested, true)
     chart.title(acis_name + " Cumulative Precipitation")
-
+         .monsoonSeason();
+         
     calc_stats();
 }
 
