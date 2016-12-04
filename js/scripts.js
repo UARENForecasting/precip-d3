@@ -277,11 +277,11 @@ function get_acis_data(sid, state, bbox) {
 
     if (typeof(state) === 'undefined' && typeof(bbox) === 'undefined') {
         var sid = (typeof(sid) === "undefined") ? sids['tucson'] : sid;
-        var url = "http://data.rcc-acis.org/StnData";
+        var url = "https://data.rcc-acis.org/StnData";
         params['sid'] = sid;
         parser = precip_parser_acis
     } else if (typeof(bbox) === 'undefined'){
-        var url = "http://data.rcc-acis.org/GridData";
+        var url = "https://data.rcc-acis.org/GridData";
         params['state'] = state;
         params['grid'] = 1;
         //params.elems['reduce'] = 'mean';
@@ -289,7 +289,7 @@ function get_acis_data(sid, state, bbox) {
         //params.elems[0]['smry_only'] = 1;
         parser = precip_parser_acis_grid
     } else {
-        var url = "http://data.rcc-acis.org/GridData";
+        var url = "https://data.rcc-acis.org/GridData";
         params['bbox'] = bbox;
         params['grid'] = 1;
         //params.elems[0]['reduce'] = 'mean';
@@ -300,7 +300,6 @@ function get_acis_data(sid, state, bbox) {
     }
 
     var params_string = JSON.stringify(params);
-    var args = {params: params_string};
 
     console.log("getting data for: ", params_string);
 
