@@ -28,25 +28,22 @@ var dataDiv = "#data";
 var aspectRatio = 16.0/7.0;
 
 
-// jquery document ready
-// all explicit flow control goes in here
-$(function() {
 
-    // make an empty plot
-    initializePlots();
+// make an empty plot
+initializePlots();
 
-    // get the data
-    // the function returns immediately but tells the browser
-    // to execute precip_callback when the
-    // server returns the data to the browser
-    // signature: d3.csv(url, accessor, callback)
-    //d3.csv(dataURL, precip_parser, precip_callback);
+// get the data
+// the function returns immediately but tells the browser
+// to execute precip_callback when the
+// server returns the data to the browser
+// signature: d3.csv(url, accessor, callback)
+//d3.csv(dataURL, precip_parser, precip_callback);
 
-    // mei_callback has the call to precip_callback
-    // need to do it in order so the mei data is available first
-    d3.csv(meiURL, mei_parser, mei_callback);
-    d3.csv(oniURL, oni_parser, oni_callback);
-});
+// mei_callback has the call to precip_callback
+// need to do it in order so the mei data is available first
+d3.csv(meiURL, mei_parser, mei_callback);
+d3.csv(oniURL, oni_parser, oni_callback);
+
 
 
 // everything from here down is a function that is called by something above.
@@ -248,22 +245,23 @@ function precip_callback_acis(rows) {
 
     // add the data to the plot
     d3.selectAll("#chart").call(chart, dataNested, true)
-    chart.title(acis_name + " Cumulative Precipitation")
-         .monsoonSeason();
-         
+    chart.title(acis_name + " Cumulative Precipitation");
+//          .monsoonSeason();
+
     calc_stats();
 }
 
 
-sids = {'tucson': "USW00023160",
-        'phoenix': "USW00023183",
-        'flagstaff': "USW00003103",
-        'yuma': "USW00023195",
-        'portland': "USW00024229",
-        'seattle': "USW00024233",
-        'los angeles': "USW00023174",
-        'denver': "USW00003017"
-        }
+var sids = {
+    'tucson': "USW00023160",
+    'phoenix': "USW00023183",
+    'flagstaff': "USW00003103",
+    'yuma': "USW00023195",
+    'portland': "USW00024229",
+    'seattle': "USW00024233",
+    'los angeles': "USW00023174",
+    'denver': "USW00003017"
+    }
 
 
 function get_acis_data(sid, state, bbox) {
@@ -306,13 +304,8 @@ function get_acis_data(sid, state, bbox) {
 
     console.log("getting data for: ", params_string);
 
-    $.ajax(url, {
-        type: 'POST',
-        data: args,
-        crossDomain: true,
-        success: parser,
-        error: handle_acis_error
-    });
+    d3.xhr(url+"?params="+params_string, 'text/plain', function(err, data) {
+        parser(JSON.parse(data.response)); });
 }
 
 
