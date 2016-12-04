@@ -526,21 +526,25 @@ function precipChart() {
 
     function getENSOvalue(d) {
         var ensoval;
-        var key = d.key
+        var key = d.key;
+        var yearData;
 
         if (d.key == 'mean' || d.key == 'median') {
             return 'N/A';
         } else {
-            try {
-                ensoval = ensoIndexData[key][0][ensoBin];
-            } catch (TypeError) {
-                console.log('invalid year or key ', d.key, '. using most recent year');
+            yearData = ensoIndexData[key]
+            if (typeof(yearData) === "undefined") {
+                console.log('invalid year or key', d.key, '... using most recent year and month');
                 var years = d3.keys(ensoIndexData);
                 key = years[years.length - 1];
+                yearData = ensoIndexData[key]
+            } else {
+                ensoval = yearData[0][ensoBin];
             }
+
             if (typeof(ensoval) === "undefined") {
-                console.log('invalid ensoBin ', ensoBin, '. using most recent for year ', key)
-                var ordering
+                console.log('invalid ensoBin ', ensoBin, '. using most recent for year ', key);
+                var ordering;
                 if (ensoIndex == 'MEI') {
                     ordering = 'DECJAN,JANFEB,FEBMAR,MARAPR,APRMAY,MAYJUN,JUNJUL,JULAUG,AUGSEP,SEPOCT,OCTNOV,NOVDEC';
                 } else if (ensoIndex == 'ONI') {
@@ -548,7 +552,7 @@ function precipChart() {
                 }
                 ordering = ordering.split(',').reverse();
                 for (var i=0; i<ordering.length; i++) {
-                    ensoval = ensoIndexData[key][0][ordering[i]];
+                    ensoval = yearData[0][ordering[i]];
                     if (typeof(ensoval) === "undefined") {
                         continue;
                     } else {
