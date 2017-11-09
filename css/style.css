@@ -38,6 +38,8 @@ a:visited { color: rgb(49, 54, 149) }  /* visited links   */
 
 .season-control:hover {color: red; cursor: pointer;}
 
+.index-control:hover {color: red; cursor: pointer;}
+
 #data {
     padding-top: 20px;
 }

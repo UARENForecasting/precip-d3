@@ -171,6 +171,8 @@ function precipChart() {
 
             gEnter = createSeasonControl(gEnter);
 
+            gEnter = createIndexControl(gEnter);
+
             if (enlargeAllowed) {
                 gEnter.append("text")
                         .attr("class", "enlarge-shrink-button")
@@ -431,6 +433,27 @@ function precipChart() {
                 })
             .text(function(d){return d.season})
             .attr("class", "season-control")
+            .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
+            .on("click", function(d) { d.func() } )
+        return gEnter;
+    }
+
+    function createIndexControl(gEnter) {
+        var indexXOffset = 100;
+        var indexYOffset = 100;
+        var spacing = 20;
+
+        var indexData = [{"index": "MEI", "func": chart.mei, "dflt":"true"},
+                         {"index": "ONI", "func": chart.oni}];
+
+        var indicies = gEnter.selectAll("text.indexControl").data(indexData).enter()
+        indicies.append("text")
+            .attr({
+                x: indexXOffset,
+                y: function(d,i) { return i * spacing + indexYOffset }
+                })
+            .text(function(d){return d.index})
+            .attr("class", "index-control")
             .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
             .on("click", function(d) { d.func() } )
         return gEnter;
@@ -728,6 +751,30 @@ function precipChart() {
             .attr("fill", "gray")
 
         return chart.redraw();
+    }
+
+    chart.mei = function() {
+        indexControls = d3.selectAll(".index-control");
+        indexControls
+            .filter(function(d) { return d.index.toLowerCase().indexOf("mei") > -1 })
+            .attr("fill", "black")
+        indexControls
+            .filter(function(d) { return d.index.toLowerCase().indexOf("mei") == -1 })
+            .attr("fill", "gray")
+
+        return chart.ensoIndex('MEI').ensoBin('JANFEB').colorBinScheme('default').redraw();
+    }
+
+    chart.oni = function() {
+        indexControls = d3.selectAll(".index-control");
+        indexControls
+            .filter(function(d) { return d.index.toLowerCase().indexOf("oni") > -1 })
+            .attr("fill", "black")
+        indexControls
+            .filter(function(d) { return d.index.toLowerCase().indexOf("oni") == -1 })
+            .attr("fill", "gray")
+
+        return chart.ensoIndex('ONI').ensoBin('DJF').colorBinScheme('NOAA').redraw();
     }
 
     chart.months = function(_) {
