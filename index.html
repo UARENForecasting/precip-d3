@@ -35,10 +35,10 @@
         <p>
             This plot shows the cumulative precipitation at Tucson International Airport for each year since 1951.
             The data is colored by the strength of El Nino (blue) or La Nina (red) in that year, specifically the Jan-Feb <a href="http://www.esrl.noaa.gov/psd/enso/mei/index.html">Multivariate ENSO Index (MEI)</a>.
-            The Tucson water year starts on October 1 of the previous year.
+            The water year starts on October 1 of the previous year.
         </p>
         <p>
-            Try reloading the page if the plot does not show up. Academic website development!
+            Sometimes the plot fails to appear. Try reloading the page if the plot does not show up. Welcome to academic website development.
         </p>
         <h2>Tips</h2>
             <ul>
@@ -47,6 +47,7 @@
             <li>Click on the line or the year to keep it highlighted when you move your cursor away. This can make it easier to compare a handful of specific years.</li>
             <li>Click the "Cool season," "Monsoon season," or "Full year" buttons to change date ranges. The MEI remains fixed to Jan-Feb of that water year regardless of the season selection. The season definitions are only based on the calendar, not the meteorological conditions of the specific years.</li>
             <li>Click the "MEI" or "ONI" buttons to switch between the Multivariate ENSO Index and the Oceanic Nino Index.</li>
+            <li>Click a different month/months-average to change the time of the year that controls the colors.</li>
             <li>Open up a second browser tab to easily compare different settings or stations (see below).</li>
             </ul>
         </p>
@@ -150,11 +151,13 @@
             The source code for this site is on <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a> and released under the MIT license. This means that you can easily copy the code, play with it, contribute your improvements to this page, or use the code as the starting point or inspiration for your own tool.
             Here are some possible improvements:
             <ul>
+            <li>Pull MEI/ONI/PDO data direct from NOAA and parse. (NOAA's data file structures make this non-trivial.)</li>
             <li>Add controls and URL support for the advanced features.</li>
             <li>Add support for RCC-ACIS' bbox averages.</li>
             <li>Add sticky tooltip with total precip for selected years.</li>
             <li>Distinguish between mean and median. Make one grey or dashed?</li>
             <li>Use localStorage to cache data, then only request new data.</li>
+            <li>Add means for each color bin.</li>
             </ul>
         </p>
         <h2>Credits</h2>
