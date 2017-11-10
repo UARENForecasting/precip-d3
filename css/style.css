@@ -172,5 +172,26 @@ text.enlarge-shrink-button:hover { cursor: pointer; fill: #0972a5 !important}
 }
 
 
+/* copied from ua bootstrap */
+/* loading all of ua bootstrap screws up the tables in a hard to fix way */
 
+.arizona-logo {
+    display: inline-block;
+    height: 20px;
+    margin: 19px 0 20px;
+    max-width: 80%;
+    float: left;
+    width: 276px;
+    padding: 0 0 0 .6rem
+}
 
+.bg-blue {
+    background-color: #0c234b;
+}
+
+/* needed to make the above work without the rest of ua bootstraps crap */
+
+.banner {
+    width: 100%;
+    height: 55px;
+}
