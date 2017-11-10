@@ -40,6 +40,8 @@ a:visited { color: rgb(49, 54, 149) }  /* visited links   */
 
 .index-control:hover {color: red; cursor: pointer;}
 
+.bin-control:hover {color: red; cursor: pointer;}
+
 #data {
     padding-top: 20px;
 }

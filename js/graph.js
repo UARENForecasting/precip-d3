@@ -201,6 +201,8 @@ function precipChart() {
 
             g = enterUpdateColorbar(g);
 
+            g = createBinControl(g);
+
             // DATA JOIN
             // Join new data with old, if any.
             // The result is the UPDATE selection which applies to
@@ -229,7 +231,7 @@ function precipChart() {
             // Applies to the old data only
             // Remove old lines if needed
             if (!appendToPlot) {
-                linesUpdate.exit().remove()
+                linesUpdate.exit().remove();
             }
 
             // New selection with all remaining lines
@@ -270,7 +272,7 @@ function precipChart() {
                                 })
                             )})
                           .attr("class", "line")
-                          .attr("stroke", getENSOcolor )
+                          .attr("stroke", chart.getENSOcolor)
                           .attr("stroke-width", get_strokeWidthNormal)
                           .attr("stroke-opacity", get_strokeOpacityNormal);
 
@@ -333,10 +335,16 @@ function precipChart() {
             td.enter()
                 .append("td")
                 .html(function(d) {return d.key})
-                .style("color", getENSOcolor )
                 .on("click", chart.tableYearClick)
                 .on("mouseover", chart.tableYearMouseover)
                 .on("mouseout", chart.tableYearMouseout);
+
+            // repropagate data to update colors
+            d3.select("#tables")
+                .selectAll("table")
+                .selectAll("tr")
+                .selectAll("td")
+                .style("color", chart.getENSOcolor);
 
         }); // end of selection.each()
     }; // end of chart()
@@ -444,7 +452,8 @@ function precipChart() {
         var spacing = 20;
 
         var indexData = [{"index": "MEI", "func": chart.mei, "dflt":"true"},
-                         {"index": "ONI", "func": chart.oni}];
+                         {"index": "ONI", "func": chart.oni},
+                         {"index": "PDO", "func": chart.pdo}];
 
         var indicies = gEnter.selectAll("text.indexControl").data(indexData).enter()
         indicies.append("text")
@@ -457,6 +466,36 @@ function precipChart() {
             .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
             .on("click", function(d) { d.func() } )
         return gEnter;
+    }
+
+    function createBinControl(g) {
+        var binXOffset = 230;
+        var binYOffset = 20;
+        var spacing = 20;
+
+        try {
+            var binData = d3.keys(ensoIndexData[2014])
+                            .filter(function(d) { return d.toLowerCase() !== "year" });
+        } catch(TypeError) {
+            var binData = [];
+        }
+
+        console.log('binData: ', binData);
+
+        var bins = g.selectAll("text.bin-control").data(binData);
+        bins.enter()
+            .append("text")
+            .attr("class", "bin-control");
+        bins.attr({
+                x: binXOffset,
+                y: function(d,i) { return i * spacing + binYOffset }
+                })
+            .text(function(d) {return d})
+            .attr("fill", function(d) { return d !== chart.ensoBin() ? "gray" : "black"} )
+            .on("click", function(d) { chart.ensoBin(d).redraw() } );
+        bins.exit().remove();
+
+        return g;
     }
 
     function rezeroAccumulation(d) {
@@ -533,21 +572,37 @@ function precipChart() {
         return (new Date(d)).setFullYear(year);
     }
 
+    function get_strokeWidthNormal(d) {
+        if (d.key == 'mean' || d.key == 'median') {
+            return 2;
+        } else {
+            return strokeWidthNormal;
+        }
+    }
+
+    function get_strokeOpacityNormal(d) {
+        if (d.key == 'mean' || d.key == 'median') {
+            return 1;
+        } else {
+            return strokeOpacityNormal;
+        }
+    }
+
     chart.ensoBin = function(_) {
         if (!arguments.length) return ensoBin;
         _ = _.toUpperCase();
         if (chart.ensoIndex() === 'MEI' &&
-            typeof(ensoIndexData["2014"][0][_]) === 'undefined') {
+            typeof(ensoIndexData["2014"][_]) === 'undefined') {
             throw 'invalid ensoBin for MEI';
         } else if (chart.ensoIndex() === 'ONI' &&
-                   typeof(ensoIndexData["2014"][0][_]) === 'undefined') {
+                   typeof(ensoIndexData["2014"][_]) === 'undefined') {
             throw 'invalid ensoBin for ONI';
         }
         ensoBin = _;
         return chart;
     }
 
-    function getENSOvalue(d) {
+    chart.getENSOvalue = function(d) {
         var ensoval;
         var key = d.key;
         var yearData;
@@ -562,7 +617,7 @@ function precipChart() {
                 key = years[years.length - 1];
                 yearData = ensoIndexData[key]
             } else {
-                ensoval = yearData[0][ensoBin];
+                ensoval = yearData[ensoBin];
             }
 
             if (typeof(ensoval) === "undefined") {
@@ -572,10 +627,12 @@ function precipChart() {
                     ordering = 'DECJAN,JANFEB,FEBMAR,MARAPR,APRMAY,MAYJUN,JUNJUL,JULAUG,AUGSEP,SEPOCT,OCTNOV,NOVDEC';
                 } else if (ensoIndex == 'ONI') {
                     ordering = 'DJF,JFM,FMA,MAM,AMJ,MJJ,JJA,JAS,ASO,SON,OND,NDJ';
+                } else if (ensoIndex == 'PDO') {
+                    ordering = '1,2,3,4,5,6,7,8,9,10,11,12';
                 }
                 ordering = ordering.split(',').reverse();
                 for (var i=0; i<ordering.length; i++) {
-                    ensoval = yearData[0][ordering[i]];
+                    ensoval = yearData[ordering[i]];
                     if (typeof(ensoval) === "undefined") {
                         continue;
                     } else {
@@ -587,27 +644,11 @@ function precipChart() {
         return parseFloat(ensoval).toFixed(2);
     }
 
-    function getENSOcolor(d) {
+    chart.getENSOcolor = function(d) {
         if (d.key == 'mean' || d.key == 'median') {
             return 'black';
         } else {
-            return colorScale(getENSOvalue(d));
-        }
-    }
-
-    function get_strokeWidthNormal(d) {
-        if (d.key == 'mean' || d.key == 'median') {
-            return 2;
-        } else {
-            return strokeWidthNormal;
-        }
-    }
-
-    function get_strokeOpacityNormal(d) {
-        if (d.key == 'mean' || d.key == 'median') {
-            return 1;
-        } else {
-            return strokeOpacityNormal;
+            return colorScale(chart.getENSOvalue(d));
         }
     }
 
@@ -775,6 +816,18 @@ function precipChart() {
             .attr("fill", "gray")
 
         return chart.ensoIndex('ONI').ensoBin('DJF').colorBinScheme('NOAA').redraw();
+    }
+
+    chart.pdo = function() {
+        indexControls = d3.selectAll(".index-control");
+        indexControls
+            .filter(function(d) { return d.index.toLowerCase().indexOf("pdo") > -1 })
+            .attr("fill", "black")
+        indexControls
+            .filter(function(d) { return d.index.toLowerCase().indexOf("pdo") == -1 })
+            .attr("fill", "gray")
+
+        return chart.ensoIndex('PDO').ensoBin('1').colorBinScheme('NOAA').redraw();
     }
 
     chart.months = function(_) {
@@ -1035,7 +1088,7 @@ function precipChart() {
         var dailyPrecip = thisLineData.values[xdata.waterDay].precip;
         dailyPrecip = parseFloat(dailyPrecip).toFixed(2) + " in";
 
-        var ensoval = getENSOvalue(thisLineData);
+        var ensoval = chart.getENSOvalue(thisLineData);
 
         //var text = createTooltipText(thisLineData.key, String(yval), 'Day '+xdata.waterDay, 'MEI: '+ensoval, xdata.date);
         var text = createTooltipText(thisLineData.key, xdata.date, xdata.waterDay, yval, dailyPrecip, ensoval);
@@ -1058,7 +1111,7 @@ function precipChart() {
         var dailyPrecip = thisLineData.values[xdata.waterDay].precip;
         dailyPrecip = parseFloat(dailyPrecip).toFixed(2) + " in";
 
-        var ensoval = getENSOvalue(thisLineData);
+        var ensoval = chart.getENSOvalue(thisLineData);
 
         var text = createTooltipText(thisLineData.key, xdata.date, xdata.waterDay, yval, dailyPrecip, ensoval);
 
@@ -1167,7 +1220,7 @@ function precipChart() {
 
         var yval = data.values[xdata.waterDay].cumulativePrecipPlot;
         yvalText = parseFloat(yval).toFixed(2) + " in";
-        var ensoval = chart.ensoIndex() + " " + getENSOvalue(data);
+        var ensoval = chart.ensoIndex() + " " + chart.getENSOvalue(data);
 
         var text = data.key + ". " + yvalText + ", " + ensoval;
         //console.log(text);
@@ -1190,7 +1243,7 @@ function precipChart() {
 
         var yval = data.values[xdata.waterDay].cumulativePrecipPlot;
         yvalText = parseFloat(yval).toFixed(2) + " in";
-        var ensoval = chart.ensoIndex() + " " + getENSOvalue(data);
+        var ensoval = chart.ensoIndex() + " " + chart.getENSOvalue(data);
 
         var text = data.key + ". " + yvalText + ", " + ensoval;
         //console.log(text);

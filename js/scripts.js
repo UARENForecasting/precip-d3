@@ -7,8 +7,9 @@
 // the chart.
 
 // data files
-var meiURL = 'data/mei.csv'; // http://www.esrl.noaa.gov/psd/enso/mei/table.html
-var oniURL = 'data/oni.csv'; // obtained from https://data.hdx.rwlabs.org/dataset/monthly-oceanic-nino-index-oni/resource/ba1a3d4e-6067-4b72-a2e1-9a9b5c622080
+var meiURL = 'data/mei.csv'; // obtained from http://www.esrl.noaa.gov/psd/enso/mei/table.html and manually entered
+var oniURL = 'data/oni.csv'; // obtained from http://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt and processed using wholmgren's oni_to_csv jupyter notebook
+var pdoURL = 'data/pdo.csv'; // obtained from https://www.ncdc.noaa.gov/teleconnections/pdo/data.csv
 
 // global variables
 // maybe bad practice, but global scope makes life easier while developing
@@ -43,7 +44,7 @@ initializePlots();
 // need to do it in order so the mei data is available first
 d3.csv(meiURL, mei_parser, mei_callback);
 d3.csv(oniURL, oni_parser, oni_callback);
-
+d3.csv(pdoURL, pdo_parser, pdo_callback);
 
 
 // everything from here down is a function that is called by something above.
@@ -333,7 +334,12 @@ function mei_callback(error, rows) {
     console.log(error);
     console.log('retrieved mei data: ', rows);
 
-    meiIndex = d3.nest().key(function(d) { return d.YEAR; }).map(rows);
+    meiraw = rows;
+
+    meiIndex = d3.nest().key(function(d) { return d.YEAR; })
+                        .rollup(function(d) { return d[0]; })
+                        .map(rows);
+
     ensoIndexMapping['MEI'] = meiIndex;
     chart.ensoIndex('MEI');
 
@@ -353,8 +359,37 @@ function oni_callback(error, rows) {
     console.log(error);
     console.log('retrieved oni data: ', rows);
 
-    oniIndex = d3.nest().key(function(d) { return d.Year; }).map(rows);
+    oniraw = rows;
+
+    oniIndex = d3.nest().key(function(d) { return d.Year; })
+                        .rollup(function(d) { return d[0]; })
+                        .map(rows);
+
     ensoIndexMapping['ONI'] = oniIndex;
+}
+
+function pdo_parser(d) {
+    //console.log(d);
+
+    d.Year = d.Date.slice(0, 4);
+    d.year = +d.Year;
+    d.month = String(+d.Date.slice(-2));
+
+    return d;
+}
+
+function pdo_callback(error, rows) {
+    console.log(error);
+    console.log('retrieved pdo data: ', rows);
+
+    pdoraw = rows;
+
+    pdoIndex = d3.nest().key(function(d) { return d.Year; })
+                        .key(function(d) { return d.month; })
+                        .rollup(function(d) { return d[0].Value; })
+                        .map(pdoraw);
+
+    ensoIndexMapping['PDO'] = pdoIndex;
 }
 
 function parse_url_and_get_data() {
