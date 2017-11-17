@@ -923,10 +923,12 @@ function precipChart() {
             colorBinScheme = _;
             colorDomain = [-2.25,2.25];
             colors = ["#b2182b", "#d6604d", "#f4a582", "#fddbc7", white, "#d1e5f0", "#92c5de", "#4393c3", "#2166ac"]
+            colors.reverse()
         } else if (_ === "noaa") {
             colorBinScheme = _;
             colorDomain = [-2.5,2.5];
             colors = ["#b2182b", "#d6604d", "#f4a582", "#fddbc7", white, white, "#d1e5f0", "#92c5de", "#4393c3", "#2166ac"]
+            colors.reverse()
         } else {
             throw "invalid colorScheme";
         }
