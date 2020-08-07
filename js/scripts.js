@@ -14,6 +14,11 @@ var pdoURL = 'data/pdo.csv'; // obtained from https://www.ncdc.noaa.gov/teleconn
 
 // global variables
 // maybe bad practice, but global scope makes life easier while developing
+var acis_data;
+var acis_lat;
+var acis_lon;
+var acis_name;
+
 var dataParsed;
 var dataNested;
 var dataNestedByDay;
@@ -188,7 +193,7 @@ function accumulate_precip(d) {
     var total = 0;
     for (var i = 0; i < d.length; i++) {
         var day = d[i];
-        total+= day.precip;
+        total += day.precip;
         day.cumulativePrecip = total;
     }
 }
@@ -397,8 +402,9 @@ function pdo_callback(rows) {
     pdoraw = rows;
 
     var pdoIndex = d3.group(pdoraw, d => d.Year);
-    var pdoIndexObject = new Map();
 
+    // create new map with identical structure to MEI, ONI map
+    var pdoIndexObject = new Map();
     pdoIndex.forEach(function(yr_d, year) {
         var d = {};
         yr_d.forEach(function(value, key) {

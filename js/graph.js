@@ -341,12 +341,14 @@ function precipChart() {
                     .attr("id", function (d) { return d.key; })
 
             // create rows based on propagated data
-            var tr = table.selectAll("tr").data(function(d) { return d.values })
+            var tr = d3.select("#tables").selectAll("table").selectAll("tr")
+                       .data(function(d) { return d.values })
             tr.enter()
                 .append("tr");
 
             // create cells within rows based on propagated data
-            var td = tr.selectAll("td").data(function (d) { return d.values; },
+            var td = d3.select("#tables").selectAll("table").selectAll("tr")
+                       .selectAll("td").data(function (d) { return d.values; },
                                              function (d2) { return d2.key; } );
             td.enter()
                 .append("td")
@@ -484,8 +486,8 @@ function precipChart() {
         var spacing = 20;
 
         try {
-            var binData = d3.keys(ensoIndexData[2014])
-                            .filter(function(d) { return d.toLowerCase() !== "year" });
+            var binData = Object.keys(ensoIndexData.get('2014')[0])
+                                .filter(d => d.toLowerCase() !== "year" )
         } catch(TypeError) {
             var binData = [];
         }
