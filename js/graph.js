@@ -69,16 +69,6 @@ function precipChart() {
     var tzOffset = tzMSToffset;
     //console.log('MST offset: ', tzMSToffset);
 
-    // var customTimeFormat = d3.timeFormat.multi([
-    //   [".%L", function(d) { return d.getMilliseconds(); }],
-    //   [":%S", function(d) { return d.getSeconds(); }],
-    //   ["%H:%M", function(d) { return d.getMinutes(); }],
-    //   ["%H:00", function(d) { return d.getHours(); }],
-    //   ["%-m/%-d", function(d) { return d.getDate() != 1; }],
-    //   ["%b", function(d) { return d.getMonth(); }],
-    //   ["%b", function(d) { return true; }] // plot 'Jan' instead of year number
-    // ]);
-
     var formatMillisecond = d3.timeFormat(".%L"),
         formatSecond = d3.timeFormat(":%S"),
         formatMinute = d3.timeFormat("%I:%M"),
