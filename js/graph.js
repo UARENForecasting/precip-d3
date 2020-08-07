@@ -31,8 +31,8 @@ function precipChart() {
     // once we have data, we'll assign their domains (input data min/max)
     // and ranges (the pixels that the min/max data should be mapped to)
     //var xScale = d3.scale.linear();
-    var xScale = d3.time.scale();
-    var yScale = d3.scale.linear();
+    var xScale = d3.scaleTime();
+    var yScale = d3.scaleLinear();
 
     // need to define an epoch to plot multiple years on a time axis.
     // an alternative would be to plot against the waterDay but
@@ -69,29 +69,33 @@ function precipChart() {
     var tzOffset = tzMSToffset;
     //console.log('MST offset: ', tzMSToffset);
 
-    var customTimeFormat = d3.time.format.multi([
-      [".%L", function(d) { return d.getMilliseconds(); }],
-      [":%S", function(d) { return d.getSeconds(); }],
-      ["%H:%M", function(d) { return d.getMinutes(); }],
-      ["%H:00", function(d) { return d.getHours(); }],
-      ["%-m/%-d", function(d) { return d.getDate() != 1; }],
-      ["%b", function(d) { return d.getMonth(); }],
-      ["%b", function(d) { return true; }] // plot 'Jan' instead of year number
-    ]);
+    var formatMillisecond = d3.timeFormat(".%L"),
+        formatSecond = d3.timeFormat(":%S"),
+        formatMinute = d3.timeFormat("%I:%M"),
+        formatHour = d3.timeFormat("%I %p"),
+        formatDay = d3.timeFormat("%a %d"),
+        formatWeek = d3.timeFormat("%b %d"),
+        formatMonth = d3.timeFormat("%b"),
+        formatYear = d3.timeFormat("%b");  // January instead of year
 
-    var xAxis = d3.svg.axis()
-                        .scale(xScale)
-                        .orient("bottom")
-                        .tickFormat(customTimeFormat)
-                        .ticks(d3.time.months);
+    function customTimeFormat(date) {
+    return (d3.timeSecond(date) < date ? formatMillisecond
+        : d3.timeMinute(date) < date ? formatSecond
+        : d3.timeHour(date) < date ? formatMinute
+        : d3.timeDay(date) < date ? formatHour
+        : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
+        : d3.timeYear(date) < date ? formatMonth
+        : formatYear)(date);
+    }
 
-    var yAxis = d3.svg.axis()
-                        .scale(yScale)
-                        .orient("left")
-                        .ticks(5);
+    var xAxis = d3.axisBottom(xScale)
+                  .tickFormat(customTimeFormat)
+                  .ticks(d3.timeMonth);
+
+    var yAxis = d3.axisLeft(yScale).ticks(5);
 
     // define line drawing function
-    var line = d3.svg.line()
+    var line = d3.line()
                     //.x(function(d) { return xScale(d.waterDay); })
                     .x(function(d) { return xScale(getPlotDate(d.date)); })
                     .y(function(d) { return yScale(d.cumulativePrecipPlot); });
@@ -144,6 +148,8 @@ function precipChart() {
 
     //var commonTimes;
 
+    // enclosing function precipChart() will eventually return this function
+    // near the bottom of the file.
     // selection is the parent element automatically passed by d3.selectAll().call()
     function chart(selection, newData, appendToPlot, selectedDatesOnly) {
         //console.log("operating on ", selection);
@@ -162,7 +168,7 @@ function precipChart() {
             var gEnter = svg.enter().insert("svg", ":first-child")
                                     .append("g");
 
-            //console.log(gEnter);
+            // console.log(gEnter);
 
             gEnter = createAxesAndLabels(gEnter);
 
@@ -325,12 +331,14 @@ function precipChart() {
                     .attr("id", function (d) { return d.key; })
 
             // create rows based on propagated data
-            var tr = table.selectAll("tr").data(function(d) { return d.values })
+            var tr = d3.select("#tables").selectAll("table").selectAll("tr")
+                       .data(function(d) { return d.values })
             tr.enter()
                 .append("tr");
 
             // create cells within rows based on propagated data
-            var td = tr.selectAll("td").data(function (d) { return d.values; },
+            var td = d3.select("#tables").selectAll("table").selectAll("tr")
+                       .selectAll("td").data(function (d) { return d.values; },
                                              function (d2) { return d2.key; } );
             td.enter()
                 .append("td")
@@ -358,6 +366,7 @@ function precipChart() {
                 .attr("text-anchor", "middle")
                 .attr("dx", tzLabelX)
                 .attr("dy", tzLabelY)
+                .attr("fill", "black")
                 .text(xLabel);
 
         gEnter.append("g")
@@ -367,6 +376,7 @@ function precipChart() {
                 .attr("y", 6)
                 .attr("dy", "-4.5em")
                 .style("text-anchor", "end")
+                .attr("fill", "black")
                 .text(yLabel);
 
         return gEnter;
@@ -387,29 +397,25 @@ function precipChart() {
         bars.enter()
             .append("rect")
             .attr("class", "colorbar")
-        bars.attr({
-                    width: barWidth,
-                    height: barHeight,
-                    y: function(d,i) {
+        bars.attr('width', barWidth)
+            .attr('height', barHeight)
+            .attr('y', function(d,i) {
                       return i * barHeight + barYOffset;
-                    },
-                    x: barXOffset,
-                    fill: function(d,i) {
+                    })
+            .attr('x', barXOffset)
+            .attr('fill', function(d,i) {
                       return colorScale(d+.0001);
-                    }
-                  })
+                    })
         bars.exit().remove();
 
         var labels = g.selectAll("text.colorbarlabels").data(colorBinLabels)
         labels.enter()
               .append("text")
               .attr("class", "colorbarlabels")
-        labels.attr({
-                    y: function(d,i) {
+        labels.attr('y', function(d,i) {
                       return (i+0.25) * barHeight + barYOffset;
-                    },
-                    x: barXOffset + 35 + barWidth,
-                  })
+                    })
+              .attr( 'x', barXOffset + 35 + barWidth)
                 .style("text-anchor", "end")
                 .text(function(d,i) { return parseFloat(d).toFixed(2) });
         labels.exit().remove()
@@ -418,7 +424,8 @@ function precipChart() {
         title.enter()
             .append("text")
             .attr("id", "legend-title")
-        title.attr({x: barXOffset , y:barYOffset-barHeight/2})
+        title.attr('x', barXOffset)
+             .attr('y', barYOffset-barHeight/2)
             .text(function (d) { return d; })
 
         return g
@@ -433,12 +440,11 @@ function precipChart() {
                           {"season":"Monsoon season", "func":chart.monsoonSeason},
                           {"season":"Full year", "func":chart.fullYear}]
 
-        var seasons = gEnter.selectAll("text.seasonControl").data(seasonData).enter()
-        seasons.append("text")
-            .attr({
-                x: seasonXOffset,
-                y: function(d,i) { return i * spacing + seasonYOffset }
-                })
+        var seasons = gEnter.selectAll("text.seasonControl").data(seasonData);
+
+        seasons.enter().append("text")
+            .attr('x', seasonXOffset)
+            .attr('y', function(d,i) { return i * spacing + seasonYOffset })
             .text(function(d){return d.season})
             .attr("class", "season-control")
             .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
@@ -457,10 +463,8 @@ function precipChart() {
 
         var indicies = gEnter.selectAll("text.indexControl").data(indexData).enter()
         indicies.append("text")
-            .attr({
-                x: indexXOffset,
-                y: function(d,i) { return i * spacing + indexYOffset }
-                })
+            .attr('x', indexXOffset)
+            .attr('y', function(d,i) { return i * spacing + indexYOffset })
             .text(function(d){return d.index})
             .attr("class", "index-control")
             .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
@@ -474,8 +478,8 @@ function precipChart() {
         var spacing = 20;
 
         try {
-            var binData = d3.keys(ensoIndexData[2014])
-                            .filter(function(d) { return d.toLowerCase() !== "year" });
+            var binData = Object.keys(ensoIndexData.get('2014')[0])
+                                .filter(d => d.toLowerCase() !== "year" )
         } catch(TypeError) {
             var binData = [];
         }
@@ -486,10 +490,8 @@ function precipChart() {
         bins.enter()
             .append("text")
             .attr("class", "bin-control");
-        bins.attr({
-                x: binXOffset,
-                y: function(d,i) { return i * spacing + binYOffset }
-                })
+        bins.attr('x', binXOffset)
+            .attr('y', function(d,i) { return i * spacing + binYOffset })
             .text(function(d) {return d})
             .attr("fill", function(d) { return d !== chart.ensoBin() ? "gray" : "black"} )
             .on("click", function(d) { chart.ensoBin(d).redraw() } );
@@ -592,10 +594,11 @@ function precipChart() {
         if (!arguments.length) return ensoBin;
         _ = _.toUpperCase();
         if (chart.ensoIndex() === 'MEI' &&
-            typeof(ensoIndexData["2014"][_]) === 'undefined') {
+            // [0] because get returns an array
+            typeof(ensoIndexData.get("2014")[0][_]) === 'undefined') {
             throw 'invalid ensoBin for MEI';
         } else if (chart.ensoIndex() === 'ONI' &&
-                   typeof(ensoIndexData["2014"][_]) === 'undefined') {
+                   typeof(ensoIndexData.get("2014")[0][_]) === 'undefined') {
             throw 'invalid ensoBin for ONI';
         }
         ensoBin = _;
@@ -610,13 +613,13 @@ function precipChart() {
         if (d.key == 'mean' || d.key == 'median') {
             return 'N/A';
         } else {
-            yearData = ensoIndexData[key]
+            yearData = ensoIndexData.get(key);
             if (typeof(yearData) === "undefined") {
                 console.log('invalid year or key', d.key, '... using most recent year and month');
-                var years = d3.keys(ensoIndexData);
-                key = years[years.length - 1];
-                yearData = ensoIndexData[key]
+                key = Array.from(ensoIndexData.keys()).pop()
+                yearData = ensoIndexData.get(key)[0];
             } else {
+                yearData = yearData[0];
                 ensoval = yearData[ensoBin];
             }
 
@@ -933,7 +936,7 @@ function precipChart() {
             throw "invalid colorScheme";
         }
 
-        colorScale = d3.scale.quantize().domain(colorDomain).range(colors);
+        colorScale = d3.scaleQuantize().domain(colorDomain).range(colors);
 
         // the values at which the color bins will be evaluated.
         // add a little bit to the divider values to remove float weirdness.
@@ -1230,7 +1233,8 @@ function precipChart() {
         // only append if does not exist
         yearLineg.selectAll("text.end-of-year-data").data([1]).enter()
                  .append("text")
-                 .attr({x: xScale(xExtent[1])+2, y:yScale(yval)+5})
+                 .attr('x', xScale(xExtent[1])+2)
+                 .attr('y', yScale(yval)+5)
                  .attr("class", "end-of-year-data")
                  .text(text);
     }
@@ -1251,7 +1255,8 @@ function precipChart() {
         //console.log(text);
 
         yearLineg.select("text.end-of-year-data")
-                 .attr({x: xScale(xExtent[1])+2, y:yScale(yval)+5})
+                 .attr('x', xScale(xExtent[1])+2)
+                 .attr('y', yScale(yval)+5)
                  .text(text);
     }
 
@@ -1293,7 +1298,7 @@ function precipChart() {
 }
 
 
-var tooltipDateFormatter = d3.time.format('%b %d');
+var tooltipDateFormatter = d3.timeFormat('%b %d');
 
 function createTooltipText(name, date, day, precip, dailyPrecip, enso) {
     // [jd:] move this logic to a function to only have to manipulate once

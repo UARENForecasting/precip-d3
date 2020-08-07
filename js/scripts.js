@@ -7,17 +7,26 @@
 // the chart.
 
 // data files
+var meiv2URL = 'https://psl.noaa.gov/enso/mei/data/meiv2.data';
 var meiURL = 'data/mei.csv'; // obtained from http://www.esrl.noaa.gov/psd/enso/mei/table.html and manually entered
 var oniURL = 'data/oni.csv'; // obtained from http://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt and processed using wholmgren's oni_to_csv jupyter notebook
 var pdoURL = 'data/pdo.csv'; // obtained from https://www.ncdc.noaa.gov/teleconnections/pdo/data.csv
 
 // global variables
 // maybe bad practice, but global scope makes life easier while developing
+var acis_data;
+var acis_lat;
+var acis_lon;
+var acis_name;
+
 var dataParsed;
 var dataNested;
 var dataNestedByDay;
 var dataStatsByDay;
 
+var meiraw;
+var oniraw;
+var pdoraw;
 var ensoIndexData;
 var oniIndex;
 var meiIndex;
@@ -42,19 +51,26 @@ initializePlots();
 
 // mei_callback has the call to precip_callback
 // need to do it in order so the mei data is available first
-d3.csv(meiURL, mei_parser, mei_callback);
-d3.csv(oniURL, oni_parser, oni_callback);
-d3.csv(pdoURL, pdo_parser, pdo_callback);
+// d3.tsv(meiv2URL, meiv2_parser, mei_callback);
+d3.csv(meiURL, mei_parser).then(mei_callback).catch(failureCallback);
+d3.csv(oniURL, oni_parser).then(oni_callback).catch(failureCallback);
+d3.csv(pdoURL, pdo_parser).then(pdo_callback).catch(failureCallback);
+
+
+function failureCallback(error) {
+    console.error("Error getting data: " + error);
+}
 
 
 // everything from here down is a function that is called by something above.
 
 // a function to parse the date strings in the csv file
-var dateparser = d3.time.format("%Y%m%d")
-var dateparser_acis = d3.time.format("%Y-%m-%d")
+var dateparser = d3.timeParse("%Y%m%d")
+var dateparser_acis = d3.timeParse("%Y-%m-%d")
+var dateformatter_acis = d3.timeFormat("%Y-%m-%d")
 
 
-// a function to parse the csv file
+// a function to parse the precip data from a csv file
 // this function is executed when the data is returned from the server
 function precip_parser(d) {
     //console.log(d);
@@ -76,11 +92,14 @@ function precip_parser(d) {
     }
 }
 
-var acis_data
+var acis_data;
 
+
+// a function to parse precip data from acis, then call the function for
+// updating the chart
 function precip_parser_acis(text) {
-    //console.log('precip_parser_acis');
-    //console.log(text);
+    console.log('precip_parser_acis');
+    console.log(text);
     if (typeof(text.error) !== 'undefined') {
         console.log('invalid station, malformed request, or no data available');
         return;
@@ -93,7 +112,7 @@ function precip_parser_acis(text) {
     var data = text.data.map(function(row) {
         //console.log(row);
 
-        var d = {date: dateparser_acis.parse(row[0]),
+        var d = {date: dateparser_acis(row[0]),
                  precip: +row[1]};
 
         // acis returns "T" for trace, which is turned into NaN by +.
@@ -174,7 +193,7 @@ function accumulate_precip(d) {
     var total = 0;
     for (var i = 0; i < d.length; i++) {
         var day = d[i];
-        total+= day.precip;
+        total += day.precip;
         day.cumulativePrecip = total;
     }
 }
@@ -265,16 +284,19 @@ var sids = {
     }
 
 
+// bbox does not currently work.
 function get_acis_data(sid, state, bbox) {
-    // bbox does not currently work.
+    console.log("get_acis_data with args ", sid, state);
 
     var params = {
             sdate: "1950-10-01",
             //sdate: "2015-10-01",
-            edate: dateparser_acis(new Date()),
+            edate: dateformatter_acis(new Date()),
             elems: [{"name":"pcpn","interval":"dly"}],
             output: "json"
         };
+
+    var parser;
 
     if (typeof(state) === 'undefined' && typeof(bbox) === 'undefined') {
         var sid = (typeof(sid) === "undefined") ? sids['tucson'] : sid;
@@ -304,8 +326,10 @@ function get_acis_data(sid, state, bbox) {
 
     console.log("getting data for: ", params_string);
 
-    d3.xhr(url+"?params="+params_string, 'text/plain', function(err, data) {
-        parser(JSON.parse(data.response)); });
+    d3.json(url+"?params="+params_string).then(parser)
+      .catch(function(error) {
+          console.log("error parsing precip data with parser", parser, error)
+      });
 }
 
 
@@ -324,21 +348,18 @@ function calc_stats() {
 
 function mei_parser(d) {
     //console.log(d);
-
     d.year = +d.YEAR
-
     return d;
 }
 
-function mei_callback(error, rows) {
-    console.log(error);
-    console.log('retrieved mei data: ', rows);
+
+function mei_callback(rows) {
+    console.log("mei_callback");
+    // console.log('retrieved mei data: ', rows);
 
     meiraw = rows;
 
-    meiIndex = d3.nest().key(function(d) { return d.YEAR; })
-                        .rollup(function(d) { return d[0]; })
-                        .map(rows);
+    var meiIndex = d3.group(rows, d => d.YEAR)
 
     ensoIndexMapping['MEI'] = meiIndex;
     chart.ensoIndex('MEI');
@@ -349,21 +370,17 @@ function mei_callback(error, rows) {
 
 function oni_parser(d) {
     //console.log(d);
-
     d.year = +d.Year
-
     return d;
 }
 
-function oni_callback(error, rows) {
-    console.log(error);
-    console.log('retrieved oni data: ', rows);
+
+function oni_callback(rows) {
+    // console.log('retrieved oni data: ', rows);
 
     oniraw = rows;
 
-    oniIndex = d3.nest().key(function(d) { return d.Year; })
-                        .rollup(function(d) { return d[0]; })
-                        .map(rows);
+    var oniIndex = d3.group(rows, d => d.Year)
 
     ensoIndexMapping['ONI'] = oniIndex;
 }
@@ -378,25 +395,32 @@ function pdo_parser(d) {
     return d;
 }
 
-function pdo_callback(error, rows) {
-    console.log(error);
-    console.log('retrieved pdo data: ', rows);
+function pdo_callback(rows) {
+    // console.log(error);
+    // console.log('retrieved pdo data: ', rows);
 
     pdoraw = rows;
 
-    pdoIndex = d3.nest().key(function(d) { return d.Year; })
-                        .key(function(d) { return d.month; })
-                        .rollup(function(d) { return d[0].Value; })
-                        .map(pdoraw);
+    var pdoIndex = d3.group(pdoraw, d => d.Year);
 
-    ensoIndexMapping['PDO'] = pdoIndex;
+    // create new map with identical structure to MEI, ONI map
+    var pdoIndexObject = new Map();
+    pdoIndex.forEach(function(yr_d, year) {
+        var d = {};
+        yr_d.forEach(function(value, key) {
+            d[value['month']] = value['Value'] });
+            pdoIndexObject.set(year, [d])
+    })
+
+    ensoIndexMapping['PDO'] = pdoIndexObject;
 }
 
 function parse_url_and_get_data() {
-    var id = getUrlParameter('id')
-    var sid = getUrlParameter('sid')
-    var state = getUrlParameter('state')
-    var bbox = getUrlParameter('bbox')
+    console.log("parse_url_and_get_data");
+    var id = getUrlParameter('id');
+    var sid = getUrlParameter('sid');
+    var state = getUrlParameter('state');
+    var bbox = getUrlParameter('bbox');
 
     if (typeof(id) === 'undefined' &&
         typeof(sid) === 'undefined' &&
@@ -420,6 +444,7 @@ function parse_url_and_get_data() {
 
 // a function to construct the graph elements.
 function initializePlots() {
+    console.log("initializePlots");
 
     var chartMetadata = [
          {id:"chart", title:"Cumulative Precipitation"},
@@ -440,8 +465,8 @@ function initializePlots() {
     var margin = calculateMargin(chartWidth);
 
     chart = precipChart().width(chartWidth)
-                                .height(chartHeight)
-                                .margin(margin);
+                         .height(chartHeight)
+                         .margin(margin);
 
     charts = [chart];
 
