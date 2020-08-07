@@ -451,10 +451,6 @@ function precipChart() {
         seasons.enter().append("text")
             .attr('x', seasonXOffset)
             .attr('y', function(d,i) { return i * spacing + seasonYOffset })
-            // .attr({
-            //     x: seasonXOffset,
-            //     y: function(d,i) { return i * spacing + seasonYOffset }
-            //     })
             .text(function(d){return d.season})
             .attr("class", "season-control")
             .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
@@ -475,10 +471,6 @@ function precipChart() {
         indicies.append("text")
             .attr('x', indexXOffset)
             .attr('y', function(d,i) { return i * spacing + indexYOffset })
-            // .attr({
-            //     x: indexXOffset,
-            //     y: function(d,i) { return i * spacing + indexYOffset }
-            //     })
             .text(function(d){return d.index})
             .attr("class", "index-control")
             .attr("fill", function(d) { return (typeof(d.dflt) === "undefined") ? "gray" : "black"} )
@@ -608,10 +600,11 @@ function precipChart() {
         if (!arguments.length) return ensoBin;
         _ = _.toUpperCase();
         if (chart.ensoIndex() === 'MEI' &&
-            typeof(ensoIndexData["2014"][_]) === 'undefined') {
+            // [0] because get returns an array
+            typeof(ensoIndexData.get("2014")[0][_]) === 'undefined') {
             throw 'invalid ensoBin for MEI';
         } else if (chart.ensoIndex() === 'ONI' &&
-                   typeof(ensoIndexData["2014"][_]) === 'undefined') {
+                   typeof(ensoIndexData.get("2014")[0][_]) === 'undefined') {
             throw 'invalid ensoBin for ONI';
         }
         ensoBin = _;
@@ -626,13 +619,13 @@ function precipChart() {
         if (d.key == 'mean' || d.key == 'median') {
             return 'N/A';
         } else {
-            yearData = ensoIndexData[key]
+            yearData = ensoIndexData.get(key);
             if (typeof(yearData) === "undefined") {
                 console.log('invalid year or key', d.key, '... using most recent year and month');
-                var years = d3.keys(ensoIndexData);
-                key = years[years.length - 1];
-                yearData = ensoIndexData[key]
+                key = Array.from(ensoIndexData.keys()).pop()
+                yearData = ensoIndexData.get(key)[0];
             } else {
+                yearData = yearData[0];
                 ensoval = yearData[ensoBin];
             }
 
@@ -1246,7 +1239,8 @@ function precipChart() {
         // only append if does not exist
         yearLineg.selectAll("text.end-of-year-data").data([1]).enter()
                  .append("text")
-                 .attr({x: xScale(xExtent[1])+2, y:yScale(yval)+5})
+                 .attr('x', xScale(xExtent[1])+2)
+                 .attr('y', yScale(yval)+5)
                  .attr("class", "end-of-year-data")
                  .text(text);
     }
@@ -1267,7 +1261,8 @@ function precipChart() {
         //console.log(text);
 
         yearLineg.select("text.end-of-year-data")
-                 .attr({x: xScale(xExtent[1])+2, y:yScale(yval)+5})
+                 .attr('x', xScale(xExtent[1])+2)
+                 .attr('y', yScale(yval)+5)
                  .text(text);
     }
 

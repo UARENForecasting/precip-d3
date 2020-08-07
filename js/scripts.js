@@ -19,6 +19,9 @@ var dataNested;
 var dataNestedByDay;
 var dataStatsByDay;
 
+var meiraw;
+var oniraw;
+var pdoraw;
 var ensoIndexData;
 var oniIndex;
 var meiIndex;
@@ -318,11 +321,7 @@ function get_acis_data(sid, state, bbox) {
 
     console.log("getting data for: ", params_string);
 
-    d3.json(url+"?params="+params_string)
-      .then(function(data) {
-          console.log(data);
-          parser(data);
-      })
+    d3.json(url+"?params="+params_string).then(parser)
       .catch(function(error) {
           console.log("error parsing precip data with parser", parser, error)
       });
@@ -355,9 +354,7 @@ function mei_callback(rows) {
 
     meiraw = rows;
 
-    meiIndex = d3.nest().key(function(d) { return d.YEAR; })
-                        .rollup(function(d) { return d[0]; })
-                        .map(rows);
+    var meiIndex = d3.group(rows, d => d.YEAR)
 
     ensoIndexMapping['MEI'] = meiIndex;
     chart.ensoIndex('MEI');
@@ -378,9 +375,7 @@ function oni_callback(rows) {
 
     oniraw = rows;
 
-    oniIndex = d3.nest().key(function(d) { return d.Year; })
-                        .rollup(function(d) { return d[0]; })
-                        .map(rows);
+    var oniIndex = d3.group(rows, d => d.Year)
 
     ensoIndexMapping['ONI'] = oniIndex;
 }
@@ -401,12 +396,17 @@ function pdo_callback(rows) {
 
     pdoraw = rows;
 
-    pdoIndex = d3.nest().key(function(d) { return d.Year; })
-                        .key(function(d) { return d.month; })
-                        .rollup(function(d) { return d[0].Value; })
-                        .map(pdoraw);
+    var pdoIndex = d3.group(pdoraw, d => d.Year);
+    var pdoIndexObject = new Map();
 
-    ensoIndexMapping['PDO'] = pdoIndex;
+    pdoIndex.forEach(function(yr_d, year) {
+        var d = {};
+        yr_d.forEach(function(value, key) {
+            d[value['month']] = value['Value'] });
+            pdoIndexObject.set(year, [d])
+    })
+
+    ensoIndexMapping['PDO'] = pdoIndexObject;
 }
 
 function parse_url_and_get_data() {
