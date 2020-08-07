@@ -89,7 +89,7 @@ g.gen_data.active.text { font-weight: 300 };
 }
 
 .axis text {
-    font-size: 100%;
+    font-size: 150%;
 }
 
 .line {

@@ -85,8 +85,8 @@ function precipChart() {
         formatHour = d3.timeFormat("%I %p"),
         formatDay = d3.timeFormat("%a %d"),
         formatWeek = d3.timeFormat("%b %d"),
-        formatMonth = d3.timeFormat("%B"),
-        formatYear = d3.timeFormat("%Y");
+        formatMonth = d3.timeFormat("%b"),
+        formatYear = d3.timeFormat("%b");  // January instead of year
 
     function customTimeFormat(date) {
     return (d3.timeSecond(date) < date ? formatMillisecond
@@ -376,6 +376,7 @@ function precipChart() {
                 .attr("text-anchor", "middle")
                 .attr("dx", tzLabelX)
                 .attr("dy", tzLabelY)
+                .attr("fill", "black")
                 .text(xLabel);
 
         gEnter.append("g")
@@ -385,6 +386,7 @@ function precipChart() {
                 .attr("y", 6)
                 .attr("dy", "-4.5em")
                 .style("text-anchor", "end")
+                .attr("fill", "black")
                 .text(yLabel);
 
         return gEnter;
