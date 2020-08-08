@@ -627,7 +627,10 @@ function precipChart() {
                 console.log('invalid ensoBin ', ensoBin, '. using most recent for year ', key);
                 var ordering;
                 if (ensoIndex == 'MEI') {
+                    // MEI v1 labels
                     ordering = 'DECJAN,JANFEB,FEBMAR,MARAPR,APRMAY,MAYJUN,JUNJUL,JULAUG,AUGSEP,SEPOCT,OCTNOV,NOVDEC';
+                    // MEI v2 labels, but we're sticking with v1 in concatenated file
+                    // ordering = 'DJ,JF,FM,MA,AM,MJ,JJ,JA,AS,SO,ON,ND';
                 } else if (ensoIndex == 'ONI') {
                     ordering = 'DJF,JFM,FMA,MAM,AMJ,MJJ,JJA,JAS,ASO,SON,OND,NDJ';
                 } else if (ensoIndex == 'PDO') {
