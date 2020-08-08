@@ -7,8 +7,8 @@
 // the chart.
 
 // data files
-var meiURL = 'data/mei_v1_v2.csv'; // created by meiv2.py. obtained from mei v1 and v2 data at https://psl.noaa.gov/enso/mei/index.html
-var oniURL = 'data/oni.csv'; // obtained from http://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt and processed using wholmgren's oni_to_csv jupyter notebook
+var meiURL = 'data/mei_v1_v2.csv'; // created by fetch.py. obtained from mei v1 and v2 data at https://psl.noaa.gov/enso/mei/index.html
+var oniURL = 'data/oni.csv'; // created by fetch.py. obtained from http://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt and processed using wholmgren's oni_to_csv jupyter notebook
 var pdoURL = 'data/pdo.csv'; // obtained from https://www.ncdc.noaa.gov/teleconnections/pdo/data.csv
 
 // global variables
@@ -368,20 +368,18 @@ function mei_callback(rows) {
 
 function oni_parser(d) {
     //console.log(d);
-    d.year = +d.Year
+    d.year = +d.YEAR
     return d;
 }
 
 
 function oni_callback(rows) {
     // console.log('retrieved oni data: ', rows);
-
     oniraw = rows;
-
-    var oniIndex = d3.group(rows, d => d.Year)
-
+    var oniIndex = d3.group(rows, d => d.YEAR)
     ensoIndexMapping['ONI'] = oniIndex;
 }
+
 
 function pdo_parser(d) {
     //console.log(d);
@@ -392,6 +390,7 @@ function pdo_parser(d) {
 
     return d;
 }
+
 
 function pdo_callback(rows) {
     // console.log(error);

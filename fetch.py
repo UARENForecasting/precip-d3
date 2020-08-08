@@ -28,6 +28,19 @@ def combine_meiv1_v2():
     combined.to_csv('data/mei_v1_v2.csv', float_format='%.3f')
 
 
+def fetch_oni():
+    url = 'https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt'
+    oni_raw = pd.read_csv(url, delim_whitespace=True, engine='python')
+    oni = oni_raw.pivot(index='YR', columns='SEAS', values='ANOM')
+    order = ['DJF', 'JFM', 'FMA', 'MAM', 'AMJ', 'MJJ',
+             'JJA', 'JAS', 'ASO', 'SON', 'OND', 'NDJ']
+    oni = oni[order]
+    oni.index.name = 'YEAR'
+    oni.to_csv('data/oni.csv', index=True)
+
+
 if __name__ == '__main__':
     fetch_meiv2()
     combine_meiv1_v2()
+
+    fetch_oni()
