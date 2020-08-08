@@ -39,8 +39,14 @@ def fetch_oni():
     oni.to_csv('data/oni.csv', index=True)
 
 
+def fetch_pdo():
+    url = 'https://www.ncdc.noaa.gov/teleconnections/pdo/data.csv'
+    pdo = pd.read_csv(url, skiprows=1)
+    pdo.to_csv('data/pdo.csv', index=False)
+
+
 if __name__ == '__main__':
     fetch_meiv2()
     combine_meiv1_v2()
-
     fetch_oni()
+    fetch_pdo()
