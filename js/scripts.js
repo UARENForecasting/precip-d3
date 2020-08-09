@@ -154,7 +154,7 @@ function precip_parser_acis_grid(text) {
     var data = text.data.map(function(row) {
         //console.log(row);
 
-        var d = {date: dateparser_acis.parse(row[0]),
+        var d = {date: dateparser_acis(row[0]),
                  precip: +d3.values(row[1])[0]};
 
         // acis returns "T" for trace, which is turned into NaN by +.
