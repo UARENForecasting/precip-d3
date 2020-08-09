@@ -1,17 +1,24 @@
 name: Fetch index data from NOAA
 on:
   schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '15 22 9 * 0'
+    - cron:  '35 22 9 * 0'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: |
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Fetch data
           python fetch.py
+      - run: |
           git config user.name Will Holmgren
           git config user.email william.holmgren@gmail.com
           git commit -a -m "update index data"
