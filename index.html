@@ -36,42 +36,37 @@
 
     <div id="intro">
         <p>
-            This plot shows the cumulative precipitation at Tucson International Airport for each year since 1951.
-            The data is colored by the strength of El Nino (blue) or La Nina (red) in that year, specifically the Jan-Feb <a href="http://www.esrl.noaa.gov/psd/enso/mei/index.html">Multivariate ENSO Index (MEI)</a>.
-            The water year starts on October 1 of the previous year.
+            This Haywood plot shows the cumulative precipitation at Tucson International Airport for each water year since 1951.
+            By default, the data is colored by the strength of El Nino (blue) or La Nina (red) in January and February of that year.
+            The water year starts on October 1 of the previous year (e.g. 1951 spans October 1, 1950 through September 30, 1951).
         </p>
-        <p>
-            Sometimes the plot fails to appear. Try reloading the page if the plot does not show up. Welcome to academic website development.
-        </p>
+
         <h2>Tips</h2>
             <ul>
             <li>Hover your cursor over a line or a year in the table to highlight that year of data.</li>
             <li>Hover your cursor over a line to show a tooltip with data values on that date.</li>
             <li>Click on the line or the year to keep it highlighted when you move your cursor away. This can make it easier to compare a handful of specific years.</li>
-            <li>Click the "Cool season," "Monsoon season," or "Full year" buttons to change date ranges. The MEI remains fixed to Jan-Feb of that water year regardless of the season selection. The season definitions are only based on the calendar, not the meteorological conditions of the specific years.</li>
-            <li>Click the "MEI" or "ONI" buttons to switch between the Multivariate ENSO Index and the Oceanic Nino Index.</li>
+            <li>Click the "Cool season," "Monsoon season," or "Full year" buttons to change date ranges.</li>
+            <li>Click the "MEI," "ONI," or "PDO" buttons to switch between the Multivariate ENSO Index, the Oceanic Nino Index, and the Pacific Decadal Oscillation Index.</li>
             <li>Click a different month/months-average to change the time of the year that controls the colors.</li>
             <li>Open up a second browser tab to easily compare different settings or stations (see below).</li>
             </ul>
         </p>
-        <p>
-            If your plot looks bad or doesn't load then try the <a href="images/precip_static.png">static image</a>.
-            We recommend using Chrome, Safari, or Firefox to view this page.
-            Mobile devices are not supported.
-        </p>
 
         <h2>Data sources</h2>
         <p>Precipitation data from comes from <a href="http://www.rcc-acis.org/docs_webservices.html">RCC-ACIS</a>.</p>
-        <p><a href="http://www.esrl.noaa.gov/psd/enso/mei/table.html">MEI data</a> comes from <a href="http://www.esrl.noaa.gov">NOAA ESRL</a>.</p>
+        <p><a href="https://psl.noaa.gov/enso/mei/index.html">MEI data</a> comes from <a href="http://www.esrl.noaa.gov">NOAA ESRL</a>. MEI v1 is used for 1951 - 1978. MEI v2 is used for 1979 - present.</p>
         <p><a href="http://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt">ONI data</a> comes from <a href="http://www.cpc.ncep.noaa.gov/">NOAA CPC</a>.</p>
         <p><a href="https://www.ncdc.noaa.gov/teleconnections/pdo/data.csv">PDO data</a> comes from <a href="https://www.ncdc.noaa.gov/">NOAA NCDC</a>.</p>
+
+        <p>A <a href=""></a>python script</a> fetches the MEI, ONI, and PDO data from the NOAA servers and formats it into simple csv files. The script runs periodically, so data may not always be up to date.</p>
 
         <h2>Advanced usage</h2>
         <p>
         Different observation locations can be plotted by adding <span class="code">?sid=my_identifier</span> to the URL. Your identifier can be a preselected city or any valid <a href="http://www.rcc-acis.org/docs_webservices.html">RCC-ACIS sid identifier</a>. Your local airport code will probably work. The NCDC maintains a long <a href="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt">list of GHCN station identifiers</a>, though data will not be available for every station.
         </p>
         <p>
-        State averages can be plotted by adding <span class="code">?state=my_identifier</span> to the URL where the identifier is the state's two letter postal abbreviation. RCC-ACIS will take ~5 minutes to process these area average requests. Open your browser's debugger/developer tools to see if your request is still processing or if there was an error. I'll eventually add a loading/status dialog box.
+        State averages can be plotted by adding <span class="code">?state=my_identifier</span> to the URL where the identifier is the state's two letter postal abbreviation. RCC-ACIS will take ~5 minutes to process these area average requests. Open your browser's debugger/developer tools to see if your request is still processing or if there was an error.
         </p>
         <p>
         The mean and median calculations will be wrong if the data record since 1950 is not complete.
@@ -147,19 +142,16 @@
         <p>
         Many more getter-setter methods are available that provide fine control over the graph. See the source code for details.
         </p>
-        <p>
-        These are new and relatively untested features, so you might run into problems. Please send me an email or report the issue on <a href="https://github.com/UARENForecasting/precip-d3/issues">GitHub</a>. In the future, I hope to add controls to the page for these features, which brings us to...
-        </p>
         <h2>Open source</h2>
         <p>
             The source code for this site is on <a href="https://github.com/UARENForecasting/precip-d3">GitHub</a> and released under the MIT license. This means that you can easily copy the code, play with it, contribute your improvements to this page, or use the code as the starting point or inspiration for your own tool.
             Here are some possible improvements:
             <ul>
-            <li>Pull MEI/ONI/PDO data direct from NOAA and parse. (NOAA's data file structures make this non-trivial.)</li>
-            <li>Add controls and URL support for the advanced features.</li>
-            <li>Add support for RCC-ACIS' bbox averages.</li>
+            <li>Add controls for x and y axes.</li>
+            <li>Add MJO Index.</li>
+            <li>Add support for RCC-ACIS bbox averages.</li>
             <li>Add sticky tooltip with total precip for selected years.</li>
-            <li>Distinguish between mean and median. Make one grey or dashed?</li>
+            <li>Distinguish between mean and median (e.g. make one grey or dashed).</li>
             <li>Use localStorage to cache data, then only request new data.</li>
             <li>Add means for each color bin.</li>
             </ul>
@@ -170,7 +162,7 @@
             and Ben McMahan and Mike's CLIMAS <a href="http://www.climas.arizona.edu/blog/el-niño-here…what-exactly-does-mean-arizona-and-new-mexico">blog post</a>.
         </p>
         <p>
-            Some of the graphing source code used on this site was originally developed for <a href="https://sveri.energy.arizona.edu">sveri.energy.arizona.edu</a> with help from UA's <a href="https://cct.cals.arizona.edu">CALS-CCT</a> team and funding from the <a href="http://sveri.net">SVERI utilities</a>.
+            Some of the graphing source code used on this site was originally developed for the <a href="https://forecasting.energy.arizona.edu/sveri/">SVERI project</a> with help from UA's <a href="https://cct.cals.arizona.edu">CALS-CCT</a> team.
         </p>
         <p>The plot is made with <a href="http://d3js.org">d3js</a>.</p>
         <p>
@@ -185,22 +177,6 @@
 </div>
 
 <script src="js/scripts.js"></script>
-
-<!--
-<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
-<script src="https://cdn.uadigital.arizona.edu/lib/ua-bootstrap/v1.0.0-beta.7/ua-bootstrap.min.js"></script>
- -->
-
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-44713401-12', 'auto');
-  ga('send', 'pageview');
-
-</script>
 
 </body>
 

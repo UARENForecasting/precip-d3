@@ -6,3 +6,5 @@ figures/**/*.png
 makedir/
 
 feedback.txt
+
+.vscode/

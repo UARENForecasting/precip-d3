@@ -7,9 +7,8 @@
 // the chart.
 
 // data files
-var meiv2URL = 'https://psl.noaa.gov/enso/mei/data/meiv2.data';
-var meiURL = 'data/mei.csv'; // obtained from http://www.esrl.noaa.gov/psd/enso/mei/table.html and manually entered
-var oniURL = 'data/oni.csv'; // obtained from http://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt and processed using wholmgren's oni_to_csv jupyter notebook
+var meiURL = 'data/mei_v1_v2.csv'; // created by fetch.py. obtained from mei v1 and v2 data at https://psl.noaa.gov/enso/mei/index.html
+var oniURL = 'data/oni.csv'; // created by fetch.py. obtained from http://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt and processed using wholmgren's oni_to_csv jupyter notebook
 var pdoURL = 'data/pdo.csv'; // obtained from https://www.ncdc.noaa.gov/teleconnections/pdo/data.csv
 
 // global variables
@@ -51,7 +50,6 @@ initializePlots();
 
 // mei_callback has the call to precip_callback
 // need to do it in order so the mei data is available first
-// d3.tsv(meiv2URL, meiv2_parser, mei_callback);
 d3.csv(meiURL, mei_parser).then(mei_callback).catch(failureCallback);
 d3.csv(oniURL, oni_parser).then(oni_callback).catch(failureCallback);
 d3.csv(pdoURL, pdo_parser).then(pdo_callback).catch(failureCallback);
@@ -156,7 +154,7 @@ function precip_parser_acis_grid(text) {
     var data = text.data.map(function(row) {
         //console.log(row);
 
-        var d = {date: dateparser_acis.parse(row[0]),
+        var d = {date: dateparser_acis(row[0]),
                  precip: +d3.values(row[1])[0]};
 
         // acis returns "T" for trace, which is turned into NaN by +.
@@ -359,7 +357,7 @@ function mei_callback(rows) {
 
     meiraw = rows;
 
-    var meiIndex = d3.group(rows, d => d.YEAR)
+    var meiIndex = d3.group(rows, d => d.YEAR);
 
     ensoIndexMapping['MEI'] = meiIndex;
     chart.ensoIndex('MEI');
@@ -370,20 +368,18 @@ function mei_callback(rows) {
 
 function oni_parser(d) {
     //console.log(d);
-    d.year = +d.Year
+    d.year = +d.YEAR
     return d;
 }
 
 
 function oni_callback(rows) {
     // console.log('retrieved oni data: ', rows);
-
     oniraw = rows;
-
-    var oniIndex = d3.group(rows, d => d.Year)
-
+    var oniIndex = d3.group(rows, d => d.YEAR)
     ensoIndexMapping['ONI'] = oniIndex;
 }
+
 
 function pdo_parser(d) {
     //console.log(d);
@@ -394,6 +390,7 @@ function pdo_parser(d) {
 
     return d;
 }
+
 
 function pdo_callback(rows) {
     // console.log(error);
