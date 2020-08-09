@@ -2,11 +2,7 @@ name: Fetch index data from NOAA
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '5 9 22 * 0'
-
-
-- name: Checkout
-  uses: actions/checkout@v2.3.2
+    - cron:  '6 9 22 * 0'
 
 jobs:
   build:
