@@ -19,7 +19,6 @@ jobs:
       - name: Fetch data
         run: python fetch.py
       - name: Push updates
-        uses: actions/checkout@v2
         run: |
           git config user.name Will Holmgren
           git config user.email william.holmgren@gmail.com
