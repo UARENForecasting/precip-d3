@@ -1,7 +1,7 @@
 name: Fetch index data from NOAA
 on:
   schedule:
-    - cron:  '35 22 9 * 0'
+    - cron:  '25 1 10 * *'
 
 jobs:
   build:
@@ -17,8 +17,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Fetch data
-          python fetch.py
-      - run: |
+        run: python fetch.py
+      - name: Push updates
+        uses: actions/checkout@v2
+        run: |
           git config user.name Will Holmgren
           git config user.email william.holmgren@gmail.com
           git commit -a -m "update index data"
