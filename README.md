@@ -26,4 +26,4 @@ A brief guide to the repo:
 * ``images`` has the static image of the plot and the UA logo.
 * ``css`` has the css styling for the divs. There's a lot of unused stuff in this file.
 
-This plot evolved from the [sveri.energy.arizona.edu](https://sveri.energy.arizona.edu) plots that Will Holmgren and UA CALS-CCT created in Spring of 2014.
+This plot evolved from the sveri.energy.arizona.edu plots that Will Holmgren and UA CALS-CCT created in Spring of 2014.
